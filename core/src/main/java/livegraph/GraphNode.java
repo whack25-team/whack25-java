@@ -101,6 +101,14 @@ public class GraphNode<R,N> {
         return nodeId;
     }
 
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
     // Setters
     public void addNeighbour(ConnectedNode<R,N> neighbour) {
         this.neighbours.add(neighbour);

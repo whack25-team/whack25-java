@@ -21,6 +21,47 @@ public class Graph<N, R> {
         this.gridHeight = gridHeight;
     }
 
+    public Graph(int gridWidth, int gridHeight) {
+        this.nodes = new HashMap<>();
+        this.gridWidth = gridWidth;
+        this.gridHeight = gridHeight;
+    }
+
+    /**
+     * Adds a node to the graph.
+     * @param node the node to add
+     */
+    public void addNode(GraphNode<R,N> node) {
+        if (node.getX() < 0 || node.getX() >= gridWidth || node.getY() < 0 || node.getY() >= gridHeight) {
+            throw new IllegalArgumentException("Node coordinates out of bounds");
+        }
+        nodes.put(node.getNodeId(), node);
+    }
+
+    /**
+     * Adds a unidirectional edge from fromNodeId to toNodeId with the given edge weight.
+     * @param fromNodeId the ID of the node the edge is from
+     * @param toNodeId the ID of the node the edge is to
+     * @param edgeWeight the weight of the edge
+     */
+    public void addUnidirectionalEdge(N fromNodeId, N toNodeId, int edgeWeight) {
+        GraphNode<R,N> fromNode = nodes.get(fromNodeId);
+        GraphNode<R,N> toNode = nodes.get(toNodeId);
+        if (fromNode != null && toNode != null) {
+            fromNode.addNeighbour(new ConnectedNode<>(toNode, edgeWeight));
+        } else {
+            throw new IllegalArgumentException("One or both node IDs not found in graph");
+        }
+    }
+
+    /**
+     * Gets the nodes in the graph.
+     * @return the nodes in the graph
+     */
+    public HashMap<N, GraphNode<R, N>> getNodes() {
+        return nodes;
+    }
+
     public static void main(String[] args) {
         GraphNode<String, String> nodeA = new GraphNode<>("A", 0, 0, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
         GraphNode<String, String> nodeB = new GraphNode<>("B", 1, 0, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
