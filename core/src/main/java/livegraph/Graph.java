@@ -77,4 +77,16 @@ public class Graph<N, R> {
         System.out.println(nodeA);
 
     }
+
+    public HashMap<N, GraphNode<R, N>> getNodes() {
+        return nodes;
+    }
+
+    public int getGridWidth() {
+        return gridWidth;
+    }
+
+    public int getGridHeight() {
+        return gridHeight;
+    }
 }

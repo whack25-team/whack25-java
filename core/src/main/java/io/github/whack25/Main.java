@@ -15,7 +15,11 @@ public class Main extends ApplicationAdapter {
     FitViewport viewport;
     private static final int TILE_SIZE = 32;
     private static final int ROWS = 2;
-    private static final int COLS = 2;
+    private static final int COLS = 3;
+
+    
+
+
 
     // Textures and sprites declaration
     private Texture roadUpTex;
@@ -31,7 +35,7 @@ public class Main extends ApplicationAdapter {
     private Cell[][] grid;
 
 
-    private static class Cell {
+    private class Cell {
         // Cell properties
         boolean isRoad;
         boolean hasCar;
@@ -60,19 +64,20 @@ public class Main extends ApplicationAdapter {
         houseTex = new Texture("house.png");
         junctionTex = new Texture("junction.png");
 
-        grid = new Cell[ROWS][COLS];
+        grid = new Cell[COLS][ROWS];
 
         // Initialize each Cell to avoid NullPointerException
         for (int y = 0; y < ROWS; y++) {
             for (int x = 0; x < COLS; x++) {
-                grid[y][x] = new Cell();
+                grid[x][y] = new Cell();
             }
         }
 
         grid[0][0].isRoad = true;
         grid[0][1].isRoad = true;
-        grid[1][0].isGrass = true;
-        grid[1][1].hasHouse = true;
+        grid[1][0].isRoad = true;
+        grid[1][1].isGrass = true;
+        grid[2][0].hasHouse = true;
 
         // Place a c
         grid[0][1].hasCar = true;
@@ -125,10 +130,10 @@ public class Main extends ApplicationAdapter {
 
     private Texture backgroundChecker(Cell cell, int x, int y) {
         if (cell.isRoad) {
-            if (y - 1 >= 0 && grid[y-1][x].isRoad) return roadUpTex;
-            if (y + 1 < ROWS && grid[y+1][x].isRoad) return roadDownTex;
-            if (x - 1 >= 0 && grid[y][x-1].isRoad) return roadLeftTex;
-            if (x + 1 < COLS && grid[y][x+1].isRoad) return roadRightTex;
+            if (y - 1 >= 0 && grid[x][y-1].isRoad) return roadUpTex;
+            if (y + 1 < ROWS && grid[x][y+1].isRoad) return roadDownTex;
+            if (x - 1 >= 0 && grid[x-1][y].isRoad) return roadLeftTex;
+            if (x + 1 < COLS && grid[x+1][y].isRoad) return roadRightTex;
             return roadUpTex; // fallback for an isolated road cell
         } else if (cell.isGrass) {
             return grassTex;
@@ -143,18 +148,18 @@ public class Main extends ApplicationAdapter {
 
     private void drawGrid() {
         // Background layer
-        for (int y = 0; y < ROWS; y++) {
-            for (int x = 0; x < COLS; x++) {
-                Cell cell = grid[y][x];
+        for (int x = 0; x < COLS; x++) {
+            for (int y = 0; y < ROWS; y++) {
+                Cell cell = grid[x][y];
                 Texture tex = backgroundChecker(cell, x, y);
                 spriteBatch.draw(tex, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
             }
         }
 
         // Foreground layer
-        for (int y = 0; y < ROWS; y++) {
-            for (int x = 0; x < COLS; x++) {
-                Cell cell = grid[y][x];
+        for (int x = 0; x < COLS; x++) {
+            for (int y = 0; y < ROWS; y++) {
+                Cell cell = grid[x][y];
                 if (cell.hasCar) {
                     spriteBatch.draw(carTex, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
                 } else if (cell.hasCollision) {
