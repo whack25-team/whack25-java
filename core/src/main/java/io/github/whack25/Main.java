@@ -41,7 +41,16 @@ public class Main extends ApplicationAdapter {
         or init level as LibGDX needs to be loaded first
         */
         GraphGenerator generator = new GraphGenerator();
-        gameGraph = Graph.exampleGraph(); // generator.generate(20, 20, 0.4);
+        for (int i = 0; i < 20; i++) { // generating the grid is rarely successful first time due to randomness, so retry a few times
+            try {
+                gameGraph = generator.generate(20, 20, 0.4); //Graph.exampleGraph(); // generator.generate(20, 20, 0.4);
+                break;
+            } catch (Exception e) {
+                System.err.println("Failed to generate the grid, retrying... (" + (i+1) + "/20)");
+                e.printStackTrace();
+            }
+        }
+
         spriteBatch = new SpriteBatch();
         image = new Texture("libgdx.png");
         viewport = new FitViewport(gameGraph.getGridWidth(), gameGraph.getGridHeight());
