@@ -66,8 +66,17 @@ public class Main extends ApplicationAdapter {
         viewport.apply();
         batch.setProjectionMatrix(viewport.getCamera().combined);
         batch.begin();
+
         // Draw in world units
+        // .draw draws from the bottom left corner (as the coords)
+
+        float worldWidth = viewport.getWorldWidth();
+        float worldHeight = viewport.getWorldHeight();
+
+        batch.draw(backgroundTexture, 0, 0, worldWidth, worldHeight);
+
         batch.draw(bucketTexture, 0,0, 1, 1);
+
         batch.end();
     }
 
