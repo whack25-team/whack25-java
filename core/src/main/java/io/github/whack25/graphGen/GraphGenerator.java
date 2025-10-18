@@ -224,9 +224,9 @@ public class GraphGenerator {
         }
 
         for (int i = 0; i < width; i++) {
-            System.out.println("row: " + i);
+            //System.out.println("row: " + i);
             for (int j = 0; j < height; j++) {
-                System.out.println("column: " + j);
+                //System.out.println("column: " + j);
                 int[] directions = new int[4];
                 int sum = 0;
 
@@ -248,16 +248,17 @@ public class GraphGenerator {
                 }
 
                 boolean isAdjacent = false;
-                for (int d = 0; d < 3; d++) {
-                    if (directions[d] == 1 && directions[d+1] == 1) {
+                for (int d = 0; d < 4; d++) {
+                    if (directions[d] == 1 && directions[(d+1) % 4] == 1) {
                         isAdjacent = true;
                     }
                 }
                 int x = i * 2;
                 int y = j * 2;
-                System.out.println("Node at " + x + ", " + y 
+                //displayGraph(nodeTable, x, y);
+                /*System.out.println("Node at " + x + ", " + y 
                 + " with objs at directions: N:" + directions[0] + " E:" + directions[1] + " S:" + directions[2] + " W:" + directions[3]
-                 + " with " + table[i][j] + "type.");
+                 + " with " + table[i][j] + "type.");*/
                 if (nodeTable[x][y] > 0) {
                     if (isAdjacent) { // add corner edges
                         if (directions[2] == 1 && directions[3] == 1) { // north and east empty
@@ -349,6 +350,16 @@ public class GraphGenerator {
         }
 
         return graph;
+    }
+
+    public void displayGraph(int[][] graph, int x, int y) {
+
+        for (int i = 0; i < graph.length; i++) {
+            for (int j = 0; j < graph[i].length; j++) {
+                System.out.print(graph[i][j] == 0 ? "  " : ((i == x && j == y) ? "X " : "O" + " "));
+            }
+            System.out.println();
+        }
     }
 
     public void createHousesOnGraph(Graph graph, int[][] nodeTable) {
