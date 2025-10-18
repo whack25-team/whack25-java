@@ -26,13 +26,35 @@ public class GraphNode<R,N> {
      * Progress all robot movements occupying this node by one tick.
      */
     public void tick() {
+        List<RobotMovement<R,N>> newOccupiers = new ArrayList<>(); // the occupiers at this node after this tick, during which some robots may leave
         for (RobotMovement<R, N> movement : occupiers) {
             if (movement.readyToMoveNodes()) {
-                // Find the shortest path from here to the robot's destination
-                // TODO
+                // Robot has fully moved into this node, so we can decide its next move
+                GraphNode<R,N> nextNode = this.getNextNodeOnPath(movement.getRobot().destinationNodeId);
+                if (nextNode != null) {
+                    // Move robot to next node
+                    for (ConnectedNode<R,N> neighbour : this.getNeighbours()) {
+                        if (neighbour.node.nodeId.equals(nextNode.nodeId)) {
+                            // Found the edge to the next node
+                            RobotMovement<R,N> newMovement = new RobotMovement<>(movement.getRobot(), neighbour.edgeWeight);
+                            nextNode.occupiers.add(newMovement);
+                            break;
+                        }
+                    }
+                } else {
+                    // No path found, robot stays at this node
+                    newOccupiers.add(movement);
+                }
+            } else {
+                // Robot is still moving into this node, stays here
+                newOccupiers.add(movement);
             }
+
             movement.tick();
+
         }
+
+        this.occupiers = newOccupiers;
     }
 
     // Gets the next nodeid on the shortest path to the destination
@@ -74,6 +96,10 @@ public class GraphNode<R,N> {
         return this.neighbours;
     }
 
+    public N getNodeId() {
+        return nodeId;
+    }
+
     // Setters
     public void addNeighbour(ConnectedNode<R,N> neighbour) {
         this.neighbours.add(neighbour);
@@ -81,6 +107,10 @@ public class GraphNode<R,N> {
 
     public void setNeighbours(List<ConnectedNode<R,N>> neighbours) {
         this.neighbours = neighbours;
+    }
+
+    public void addOccupier(RobotMovement<R,N> occupier) {
+        this.occupiers.add(occupier);
     }
 
     // Overrides
@@ -91,6 +121,8 @@ public class GraphNode<R,N> {
                 ", x=" + x +
                 ", y=" + y +
                 ", tileType=" + tileType +
+                ", neighbours=" + neighbours +
+                ", occupiers=" + occupiers +
                 '}';
     }
 
