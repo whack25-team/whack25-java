@@ -139,12 +139,12 @@ public class Graph<N, R> {
 
     }
 
-    public static Graph<String, String> exampleGraph() {
-        GraphNode<String, String> nodeA = new GraphNode<>("A", 0, 0, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
-        GraphNode<String, String> nodeB = new GraphNode<>("B", 9, 0, NodeType.HOUSE, new ArrayList<>(), new ArrayList<>());
-        GraphNode<String, String> nodeC = new GraphNode<>("C", 0, 9, NodeType.BLANK, new ArrayList<>(), new ArrayList<>());
-        GraphNode<String, String> nodeD = new GraphNode<>("D", 9, 9, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
-        GraphNode<String, String> nodeE = new GraphNode<>("E", 4, 4, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
+    public static Graph<Integer, Integer> exampleGraph() {
+        GraphNode<Integer, Integer> nodeA = new GraphNode<>(1, 0, 0, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
+        GraphNode<Integer, Integer> nodeB = new GraphNode<>(2, 9, 0, NodeType.HOUSE, new ArrayList<>(), new ArrayList<>());
+        GraphNode<Integer, Integer> nodeC = new GraphNode<>(3, 0, 9, NodeType.BLANK, new ArrayList<>(), new ArrayList<>());
+        GraphNode<Integer, Integer> nodeD = new GraphNode<>(4, 9, 9, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
+        GraphNode<Integer, Integer> nodeE = new GraphNode<>(5, 4, 4, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
         nodeA.addNeighbour(new ConnectedNode<>(nodeB, 40));
         nodeB.addNeighbour(new ConnectedNode<>(nodeA, 40));
         nodeA.addNeighbour(new ConnectedNode<>(nodeC, 40));
@@ -159,15 +159,15 @@ public class Graph<N, R> {
         nodeE.addNeighbour(new ConnectedNode<>(nodeB, 50));
         nodeD.addNeighbour(new ConnectedNode<>(nodeE, 10));
         nodeE.addNeighbour(new ConnectedNode<>(nodeD, 10));
-        HashMap<String, GraphNode<String, String>> nodes = new HashMap<>();
-        nodes.put("A", nodeA);
-        nodes.put("B", nodeB);
-        nodes.put("C", nodeC);
-        nodes.put("D", nodeD);
-        nodes.put("E", nodeE);
-        Graph<String, String> graph = new Graph<>(nodes, 10, 10);
+        HashMap<Integer, GraphNode<Integer, Integer>> nodes = new HashMap<>();
+        nodes.put(1, nodeA);
+        nodes.put(2, nodeB);
+        nodes.put(3, nodeC);
+        nodes.put(4, nodeD);
+        nodes.put(5, nodeE);
+        Graph<Integer, Integer> graph = new Graph<>(nodes, 10, 10);
 
-        nodeE.addOccupier(new RobotMovement<>(new Robot<>("Robo 1", "A"), 2, 4,4));
+        nodeE.addOccupier(new RobotMovement<>(new Robot<>(1, 1), 2, 4,4));
 
         return graph;
     }
