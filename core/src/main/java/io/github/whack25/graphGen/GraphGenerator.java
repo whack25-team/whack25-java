@@ -10,6 +10,11 @@ public class GraphGenerator {
 
     final int EDGE_STRAIGHT = 3;
     final int EDGE_UTURN= 5;
+
+    public Graph<Integer,Integer> generate(int width, int height, double coverageGoal) {
+        return convertGraphToCellGraph(generateGraph(width, height, coverageGoal));
+    }
+
     /**
      * Generates a graph with the specified dimensions and coverage goal.
      * Nodes generated are 2 thick so the graph cell-width is double the size of the input dimensions.
@@ -339,7 +344,7 @@ public class GraphGenerator {
         return graph;
     }
 
-    public void createHousesOnGraph(Graph graph) {
+    public void createHousesOnGraph(Graph graph, int[][] nodeTable) {
 
     }
 }
