@@ -12,10 +12,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import io.github.whack25.graphGen.GraphGenerator;
-import livegraph.Graph;
-import livegraph.GraphNode;
-import livegraph.NodeType;
-import livegraph.RobotMovement;
+import livegraph.*;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {
@@ -27,6 +24,10 @@ public class Main extends ApplicationAdapter {
     Texture dropTexture;
     Texture houseTexture;
     Texture roadTexture;
+    Texture roadTopTexture;
+    Texture roadDownTexture;
+    Texture roadRightTexture;
+    Texture roadLeftTexture;
     Texture carTexture;
     Texture grassTexture;
     Sound dropSound;
@@ -58,7 +59,11 @@ public class Main extends ApplicationAdapter {
         bucketTexture = new Texture("bucket.png");
         dropTexture = new Texture("drop.png");
         houseTexture = new Texture("house.png");
-        roadTexture = new Texture("roadDown.png"); // TODO
+        roadTexture = new Texture("roadtile.png"); // TODO
+        roadTopTexture = new Texture("roadTop.png");
+        roadDownTexture = new Texture("roadDown.png");
+        roadRightTexture = new Texture("roadRight.png");
+        roadLeftTexture = new Texture("roadLeft.png");
         grassTexture = new Texture("Grass.png");
         carTexture = new Texture("car.png");
         dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.mp3"));
@@ -159,6 +164,32 @@ public class Main extends ApplicationAdapter {
 
         spriteBatch.end();
     }
+
+//    private Texture getRoadTextureType(GraphNode<Integer, Integer> node) {
+//        // Whether there is a road tile relative to the current tile
+//        boolean roadLeft = false;
+//        boolean roadRight = false;
+//        boolean roadTop = false;
+//        boolean roadDown = false;
+//
+//        System.out.println("Neighbours: "+ node.getNeighbours().size());
+//
+//        for (ConnectedNode<Integer, Integer> neighbour : node.getNeighbours()) {
+//
+//            if (neighbour.node.getTileType() == NodeType.ROAD) {
+//                if (neighbour.node.getX() < node.getX()) roadLeft = true;
+//                if (neighbour.node.getX() > node.getX()) roadRight = true;
+//                if (neighbour.node.getY() < node.getY()) roadDown = true;
+//                if (neighbour.node.getY() > node.getY()) roadTop = true;
+//            }
+//        }
+//
+//        if (!roadLeft && roadRight && roadTop && roadDown) return roadLeftTexture;
+//        if (roadLeft && !roadRight && roadTop && roadDown) return roadRightTexture;
+//        if (roadLeft && roadRight && !roadTop && roadDown) return roadTopTexture;
+//        if (roadLeft && roadRight && roadTop && !roadDown) return roadDownTexture;
+//        return roadTexture; // default
+//    }
 
     @Override
     public void dispose() {
