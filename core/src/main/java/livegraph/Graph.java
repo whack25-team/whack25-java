@@ -11,7 +11,7 @@ public class Graph<N, R> {
     /**
      * Adds a graph with the nodes given. Note, gridWidth and gridHeight are only for reference and not enforced in any way.
      * Nodes may have coordinates outside of this range, and duplicates coordinates are not supported but are not checked for.
-     * @param nodes
+     * @param nodes the nodes in the graph
      * @param gridWidth
      * @param gridHeight
      */
