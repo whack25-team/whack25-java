@@ -117,7 +117,7 @@ public class Graph<N, R> {
         // Testing with robot occupiers
 
         // Add a robot moving into node E from an arbitrary node, with an edge weight of 2
-        nodeE.addOccupier(new RobotMovement<>(new Robot<>("Robo 1", "A"), 2));
+        nodeE.addOccupier(new RobotMovement<>(new Robot<>("Robo 1", "A"), 2, 4,4));
 
         System.out.println(nodeE);
         nodeE.tick();
@@ -167,7 +167,7 @@ public class Graph<N, R> {
         nodes.put("E", nodeE);
         Graph<String, String> graph = new Graph<>(nodes, 10, 10);
 
-        nodeE.addOccupier(new RobotMovement<>(new Robot<>("Robo 1", "A"), 2));
+        nodeE.addOccupier(new RobotMovement<>(new Robot<>("Robo 1", "A"), 2, 4,4));
 
         return graph;
     }
