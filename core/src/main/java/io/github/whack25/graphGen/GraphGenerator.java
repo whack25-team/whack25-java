@@ -92,12 +92,12 @@ public class GraphGenerator {
                 }
 
 
-                System.out.println(x + ",  " +newX + ",  " + y + ",  " + newY+",  " + length + ",  " + newDirection);
+                //System.out.println(x + ",  " +newX + ",  " + y + ",  " + newY+",  " + length + ",  " + newDirection);
 
                 // write path and check for overlap
                 int i;
                 for (i = 1; i <= length; i++) {
-                    System.out.println("  step " + i);
+                    //System.out.println("  step " + i);
                     int xInc = x;
                     int yInc = y;
                     switch (newDirection) {
@@ -207,24 +207,26 @@ public class GraphGenerator {
         int height = table[0].length;
 
         int[][] nodeTable = new int[width * 2][height * 2];
-
+        // generate nodes for all corridors and junctions
         for (int i = 0; i < table.length; i++) {
             for (int j = 0; j < table[i].length; j++) {
                 if (table[i][j] > 0) {
-                    nodeTable[i*2][j*2] = GenerateId(2 * i, 2 * j, width);
+                    nodeTable[i*2][j*2] = GenerateId(2 * i, 2 * j, width * 2);
                     graph.addNode(new GraphNode<>(nodeTable[i*2][j*2], 2 * i, 2 * j, NodeType.ROAD, new ArrayList<>(), new ArrayList<>()));
-                    nodeTable[i*2 + 1][j*2] = GenerateId(2 * i + 1, 2 * j, width);
+                    nodeTable[i*2 + 1][j*2] = GenerateId(2 * i + 1, 2 * j, width * 2);
                     graph.addNode(new GraphNode<>(nodeTable[i*2 + 1][j*2], 2 * i + 1, 2 * j, NodeType.ROAD, new ArrayList<>(), new ArrayList<>()));
-                    nodeTable[i*2][j*2 + 1] = GenerateId(2 * i, 2 * j + 1, width);
+                    nodeTable[i*2][j*2 + 1] = GenerateId(2 * i, 2 * j + 1, width * 2);
                     graph.addNode(new GraphNode<>(nodeTable[i*2][j*2 + 1], 2 * i, 2 * j + 1, NodeType.ROAD, new ArrayList<>(), new ArrayList<>()));
-                    nodeTable[i*2 + 1][j*2 + 1] = GenerateId(2 * i + 1, 2 * j + 1, width);
+                    nodeTable[i*2 + 1][j*2 + 1] = GenerateId(2 * i + 1, 2 * j + 1, width * 2);
                     graph.addNode(new GraphNode<>(nodeTable[i*2 + 1][j*2 + 1], 2 * i + 1, 2 * j + 1, NodeType.ROAD, new ArrayList<>(), new ArrayList<>()));
                 }
             }
         }
 
         for (int i = 0; i < width; i++) {
+            System.out.println("row: " + i);
             for (int j = 0; j < height; j++) {
+                System.out.println("column: " + j);
                 int[] directions = new int[4];
                 int sum = 0;
 
@@ -237,11 +239,11 @@ public class GraphGenerator {
                     sum++;
                 }
                 if (j < height - 1 && table[i][j+1] > 0) {
-                    directions[0] = 1;
+                    directions[2] = 1;
                     sum++;
                 }
                 if (j > 0 && table[i][j-1] > 0) {
-                    directions[2] = 1;
+                    directions[0] = 1;
                     sum++;
                 }
 
@@ -253,90 +255,95 @@ public class GraphGenerator {
                 }
                 int x = i * 2;
                 int y = j * 2;
-                if (isAdjacent) { // add corner edges
-                    if (directions[2] == 1 && directions[3] == 1) { // north and east
-                        graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_STRAIGHT);
+                System.out.println("Node at " + x + ", " + y 
+                + " with objs at directions: N:" + directions[0] + " E:" + directions[1] + " S:" + directions[2] + " W:" + directions[3]
+                 + " with " + table[i][j] + "type.");
+                if (nodeTable[x][y] > 0) {
+                    if (isAdjacent) { // add corner edges
+                        if (directions[2] == 1 && directions[3] == 1) { // north and east empty
+                            graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_STRAIGHT);
+                            graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_STRAIGHT);
+                            graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x+1][y+2], EDGE_STRAIGHT);
+                            graph.addUnidirectionalEdge(nodeTable[x][y+2], nodeTable[x][y+1], EDGE_STRAIGHT);
+                            graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x][y], EDGE_UTURN);
+                            graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x+1][y+1], EDGE_UTURN);
+                            graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x][y+1], EDGE_UTURN);
+                            graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_UTURN);
+                        } else if (directions[3] == 1 && directions[0] == 1) { // east and south empty
+                            graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_STRAIGHT);
+                            graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_STRAIGHT);
+                            graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_UTURN);
+                            graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x][y+1], EDGE_UTURN);
+                            graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x][y], EDGE_UTURN);
+                            graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x][y], EDGE_UTURN);
+                        } else if (directions[0] == 1 && directions[1] == 1) { // south and west empty
+                            graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_STRAIGHT);
+                            graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x][y], EDGE_STRAIGHT);
+                            graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+2][y], EDGE_STRAIGHT);
+                            graph.addUnidirectionalEdge(nodeTable[x+2][y+1], nodeTable[x+1][y+1], EDGE_STRAIGHT);
+                            graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_UTURN);
+                            graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x][y], EDGE_UTURN);
+                            graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x+1][y], EDGE_UTURN);
+                            graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_UTURN);
+                        } else if (directions[1] == 1 && directions[2] == 1) { // west and north empty
+                            graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x][y], EDGE_STRAIGHT);
+                            graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_STRAIGHT);
+                            graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+2][y], EDGE_STRAIGHT);
+                            graph.addUnidirectionalEdge(nodeTable[x+2][y+1], nodeTable[x+1][y+1], EDGE_STRAIGHT);
+                            graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x+1][y+2], EDGE_STRAIGHT);
+                            graph.addUnidirectionalEdge(nodeTable[x][y+2], nodeTable[x][y+1], EDGE_STRAIGHT);
+                            graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_UTURN);
+                            graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x+1][y], EDGE_UTURN);
+                            graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x+1][y+1], EDGE_UTURN);
+                            graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_UTURN);
+                        }
+                    } else if (directions[0] == 1 && sum == 2) { // vertical line
+                        graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x][y], EDGE_STRAIGHT);
+                        graph.addUnidirectionalEdge(nodeTable[x][y+2], nodeTable[x][y+1], EDGE_STRAIGHT);
                         graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_STRAIGHT);
                         graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x+1][y+2], EDGE_STRAIGHT);
-                        graph.addUnidirectionalEdge(nodeTable[x][y+2], nodeTable[x][y+1], EDGE_STRAIGHT);
-                        graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x][y], EDGE_UTURN);
-                        graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x+1][y+1], EDGE_UTURN);
-                        graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x][y+1], EDGE_UTURN);
-                        graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_UTURN);
-                    } else if (directions[3] == 1 && directions[0] == 1) { // east and south
-                        graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_STRAIGHT);
-                        graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_STRAIGHT);
                         graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_UTURN);
-                        graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x][y+1], EDGE_UTURN);
+                        graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x+1][y+1], EDGE_UTURN);
                         graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x][y], EDGE_UTURN);
+                        graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_UTURN);
+                    } else if (directions[1] == 1 && sum == 2) { // horizontal line
+                        graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_STRAIGHT);
+                        graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+2][y], EDGE_STRAIGHT);
+                        graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_STRAIGHT);
+                        graph.addUnidirectionalEdge(nodeTable[x+2][y+1], nodeTable[x+1][y+1], EDGE_STRAIGHT);
+                        graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x][y+1], EDGE_UTURN);
                         graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x][y], EDGE_UTURN);
-                    } else if (directions[0] == 1 && directions[1] == 1) { // south and west
+                        graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x+1][y], EDGE_UTURN);
+                        graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_UTURN);
+                    } else if (directions[0] == 1) {
+                        graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_STRAIGHT);
                         graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_STRAIGHT);
                         graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x][y], EDGE_STRAIGHT);
-                        graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+2][y], EDGE_STRAIGHT);
-                        graph.addUnidirectionalEdge(nodeTable[x+2][y+1], nodeTable[x+1][y+1], EDGE_STRAIGHT);
-                        graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_UTURN);
-                        graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x][y], EDGE_UTURN);
-                        graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x+1][y], EDGE_UTURN);
                         graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_UTURN);
-                    } else if (directions[1] == 1 && directions[2] == 1) { // west and north
+                        graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x][y], EDGE_UTURN);
+                    } else if (directions[1] == 1) {
+                        graph.addUnidirectionalEdge(nodeTable[x+2][y+1], nodeTable[x+1][y+1], EDGE_STRAIGHT);
+                        graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_STRAIGHT);
                         graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x][y], EDGE_STRAIGHT);
                         graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_STRAIGHT);
                         graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+2][y], EDGE_STRAIGHT);
-                        graph.addUnidirectionalEdge(nodeTable[x+2][y+1], nodeTable[x+1][y+1], EDGE_STRAIGHT);
-                        graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x+1][y+2], EDGE_STRAIGHT);
-                        graph.addUnidirectionalEdge(nodeTable[x][y+2], nodeTable[x][y+1], EDGE_STRAIGHT);
-                        graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_UTURN);
                         graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x+1][y], EDGE_UTURN);
-                        graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x+1][y+1], EDGE_UTURN);
                         graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_UTURN);
+                    } else if (directions[2] == 1) {
+                        graph.addUnidirectionalEdge(nodeTable[x][y+2], nodeTable[x][y+1], EDGE_STRAIGHT);
+                        graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x][y], EDGE_STRAIGHT);
+                        graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_STRAIGHT);
+                        graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_STRAIGHT);
+                        graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x+1][y+2], EDGE_STRAIGHT);
+                        graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_UTURN);
+                        graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x+1][y+1], EDGE_UTURN);
+                    } else if (directions[3] == 1) {
+                        graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_STRAIGHT);
+                        graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_STRAIGHT);
+                        graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_STRAIGHT);
+                        graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x][y+1], EDGE_UTURN);
+                        graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x][y], EDGE_UTURN);
                     }
-                } else if (directions[0] == 1 && sum == 2) { // vertical line
-                    graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x][y], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x][y+2], nodeTable[x][y+1], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x+1][y+2], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_UTURN);
-                    graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x+1][y+1], EDGE_UTURN);
-                    graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x][y], EDGE_UTURN);
-                    graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_UTURN);
-                } else if (directions[1] == 1 && sum == 2) { // horizontal line
-                    graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+2][y], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x+2][y+1], nodeTable[x+1][y+1], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x][y+1], EDGE_UTURN);
-                    graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x][y], EDGE_UTURN);
-                    graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x+1][y], EDGE_UTURN);
-                    graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_UTURN);
-                } else if (directions[0] == 1) {
-                    graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x][y], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_UTURN);
-                    graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x][y], EDGE_UTURN);
-                } else if (directions[1] == 1) {
-                    graph.addUnidirectionalEdge(nodeTable[x+2][y+1], nodeTable[x+1][y+1], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x][y], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+2][y], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x+1][y], EDGE_UTURN);
-                    graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_UTURN);
-                } else if (directions[2] == 1) {
-                    graph.addUnidirectionalEdge(nodeTable[x][y+2], nodeTable[x][y+1], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x][y], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x+1][y+2], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_UTURN);
-                    graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x+1][y+1], EDGE_UTURN);
-                } else if (directions[3] == 1) {
-                    graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_STRAIGHT);
-                    graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x][y+1], EDGE_UTURN);
-                    graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x][y], EDGE_UTURN);
                 }
             }
         }
