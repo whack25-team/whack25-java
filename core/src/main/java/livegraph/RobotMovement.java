@@ -42,4 +42,14 @@ public class RobotMovement<R, N> {
     public Robot<R, N> getRobot() {
         return robot;
     }
+
+    @Override
+    public String toString() {
+        return "RobotMovement{" +
+                "remainingProgression=" + remainingProgression +
+                ", totalEdgeWeight=" + totalEdgeWeight +
+                ", robot=" + robot.robotID +
+                ", destinationNodeId=" + robot.destinationNodeId +
+                '}';
+    }
 }
