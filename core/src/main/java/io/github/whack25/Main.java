@@ -6,13 +6,14 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {
-    private SpriteBatch batch;
+    private SpriteBatch spriteBatch;
     private Texture image;
     FitViewport viewport;
     Texture backgroundTexture;
@@ -20,6 +21,7 @@ public class Main extends ApplicationAdapter {
     Texture dropTexture;
     Sound dropSound;
     Music music;
+    Sprite bucketSprite;
 
     @Override
     public void create() {
@@ -27,7 +29,7 @@ public class Main extends ApplicationAdapter {
         or init level as LibGDX needs to be loaded first
         */
 
-        batch = new SpriteBatch();
+        spriteBatch = new SpriteBatch();
         image = new Texture("libgdx.png");
         viewport = new FitViewport(8,5);
         backgroundTexture = new Texture("background.png");
@@ -35,6 +37,8 @@ public class Main extends ApplicationAdapter {
         dropTexture = new Texture("drop.png");
         dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.mp3"));
         music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
+        bucketSprite = new Sprite(bucketTexture);
+        bucketSprite.setSize(1,1);
     }
 
     @Override
@@ -64,8 +68,8 @@ public class Main extends ApplicationAdapter {
     private void draw() {
         ScreenUtils.clear(Color.BLACK);
         viewport.apply();
-        batch.setProjectionMatrix(viewport.getCamera().combined);
-        batch.begin();
+        spriteBatch.setProjectionMatrix(viewport.getCamera().combined);
+        spriteBatch.begin();
 
         // Draw in world units
         // .draw draws from the bottom left corner (as the coords)
@@ -73,16 +77,16 @@ public class Main extends ApplicationAdapter {
         float worldWidth = viewport.getWorldWidth();
         float worldHeight = viewport.getWorldHeight();
 
-        batch.draw(backgroundTexture, 0, 0, worldWidth, worldHeight);
+        spriteBatch.draw(backgroundTexture, 0, 0, worldWidth, worldHeight);
 
-        batch.draw(bucketTexture, 0,0, 1, 1);
+        bucketSprite.draw(spriteBatch);
 
-        batch.end();
+        spriteBatch.end();
     }
 
     @Override
     public void dispose() {
-        batch.dispose();
+        spriteBatch.dispose();
         image.dispose();
     }
 }
