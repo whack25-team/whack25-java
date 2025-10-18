@@ -25,6 +25,7 @@ public class Main extends ApplicationAdapter {
     Texture dropTexture;
     Texture houseTexture;
     Texture roadTexture;
+    Texture carTexture;
     Texture grassTexture;
     Sound dropSound;
     Music music;
@@ -47,6 +48,7 @@ public class Main extends ApplicationAdapter {
         houseTexture = new Texture("house.png");
         roadTexture = new Texture("roadDown.png"); // TODO
         grassTexture = new Texture("Grass.png");
+        carTexture = new Texture("car.png");
         dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.mp3"));
         music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
         bucketSprite = new Sprite(bucketTexture);
@@ -123,7 +125,7 @@ public class Main extends ApplicationAdapter {
                              grassTexture,
                 node.getX(), node.getY(), 1,1);
             if (!node.getOccupiers().isEmpty()) {
-                spriteBatch.draw(dropTexture, node.getX(), node.getY(), 1,1);
+                spriteBatch.draw(carTexture, node.getX()+0.25f, node.getY()+0.25f, 0.5f,0.5f);
             }
         }
 
