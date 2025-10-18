@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import io.github.whack25.graphGen.GraphGenerator;
 import livegraph.Graph;
 import livegraph.GraphNode;
 import livegraph.NodeType;
@@ -31,7 +32,7 @@ public class Main extends ApplicationAdapter {
     Sound dropSound;
     Music music;
     Sprite bucketSprite;
-    private Graph<String, String> gameGraph;
+    private Graph<Integer, Integer> gameGraph;
     private final int MAX_FRAME_RATE = 2;
 
     @Override
@@ -39,7 +40,8 @@ public class Main extends ApplicationAdapter {
         /* Load textures, sounds here - you should not create these at constructor
         or init level as LibGDX needs to be loaded first
         */
-        gameGraph = Graph.exampleGraph();
+        GraphGenerator generator = new GraphGenerator();
+        gameGraph = Graph.exampleGraph(); // generator.generate(20, 20, 0.4);
         spriteBatch = new SpriteBatch();
         image = new Texture("libgdx.png");
         viewport = new FitViewport(gameGraph.getGridWidth(), gameGraph.getGridHeight());
@@ -123,7 +125,7 @@ public class Main extends ApplicationAdapter {
         spriteBatch.draw(backgroundTexture, 0, 0, worldWidth, worldHeight);
 
         // Add background textures
-        for (GraphNode<String, String> node : gameGraph.getNodes().values()) {
+        for (GraphNode<Integer, Integer> node : gameGraph.getNodes().values()) {
             spriteBatch.draw(node.getTileType() == NodeType.HOUSE ? houseTexture :
                              node.getTileType() == NodeType.ROAD ? roadTexture :
                              grassTexture,
@@ -132,9 +134,9 @@ public class Main extends ApplicationAdapter {
         }
 
         // Draw robots
-        for (GraphNode<String, String> node : gameGraph.getNodes().values()) {
+        for (GraphNode<Integer, Integer> node : gameGraph.getNodes().values()) {
             if (!node.getOccupiers().isEmpty()) {
-                for (RobotMovement<String, String> movement : node.getOccupiers()) {
+                for (RobotMovement<Integer, Integer> movement : node.getOccupiers()) {
                     float progress = 1.0f - ((float) movement.getRemainingProgression() / (float) movement.getTotalEdgeWeight());
                     spriteBatch.draw(carTexture,
                         0.25f+node.getX()*progress + movement.getOriginX()*(1-progress),
