@@ -1,3 +1,5 @@
+package we;
+
 public class WorldElement {
 	public boolean solid;
 	public double windx;
