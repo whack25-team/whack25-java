@@ -11,6 +11,9 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import livegraph.Graph;
+import livegraph.GraphNode;
+import livegraph.NodeType;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {
@@ -20,22 +23,29 @@ public class Main extends ApplicationAdapter {
     Texture backgroundTexture;
     Texture bucketTexture;
     Texture dropTexture;
+    Texture houseTexture;
+    Texture roadTexture;
+    Texture grassTexture;
     Sound dropSound;
     Music music;
     Sprite bucketSprite;
+    private Graph<String, String> gameGraph;
 
     @Override
     public void create() {
         /* Load textures, sounds here - you should not create these at constructor
         or init level as LibGDX needs to be loaded first
         */
-
+        gameGraph = Graph.exampleGraph();
         spriteBatch = new SpriteBatch();
         image = new Texture("libgdx.png");
-        viewport = new FitViewport(8,5);
+        viewport = new FitViewport(gameGraph.getGridWidth(), gameGraph.getGridHeight());
         backgroundTexture = new Texture("background.png");
         bucketTexture = new Texture("bucket.png");
         dropTexture = new Texture("drop.png");
+        houseTexture = new Texture("house.png");
+        roadTexture = new Texture("roadDown.png"); // TODO
+        grassTexture = new Texture("Grass.png");
         dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.mp3"));
         music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
         bucketSprite = new Sprite(bucketTexture);
@@ -59,14 +69,14 @@ public class Main extends ApplicationAdapter {
     }
 
     private void input() {
-        float speed = .25f;
-        float delta = Gdx.graphics.getDeltaTime(); // time since last frame
-
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            bucketSprite.translateX(speed * delta);
-        } else if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            bucketSprite.translateX(-speed * delta);
-        }
+//        float speed = .25f;
+//        float delta = Gdx.graphics.getDeltaTime(); // time since last frame
+//
+//        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+//            bucketSprite.translateX(speed * delta);
+//        } else if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+//            bucketSprite.translateX(-speed * delta);
+//        }
     }
 
     private void logic() {
@@ -87,7 +97,17 @@ public class Main extends ApplicationAdapter {
 
         spriteBatch.draw(backgroundTexture, 0, 0, worldWidth, worldHeight);
 
-        bucketSprite.draw(spriteBatch);
+        for (GraphNode<String, String> node : gameGraph.getNodes().values()) {
+            spriteBatch.draw(node.getTileType() == NodeType.HOUSE ? houseTexture :
+                             node.getTileType() == NodeType.ROAD ? roadTexture :
+                             grassTexture,
+                node.getX(), node.getY(), 1,1);
+            if (!node.getOccupiers().isEmpty()) {
+                spriteBatch.draw(dropTexture, node.getX(), node.getY(), 1,1);
+            }
+        }
+
+//        bucketSprite.draw(spriteBatch);
 
         spriteBatch.end();
     }

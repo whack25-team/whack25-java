@@ -97,6 +97,10 @@ public class GraphNode<R,N> {
         return this.neighbours;
     }
 
+    public List<RobotMovement<R,N>> getOccupiers() {
+        return this.occupiers;
+    }
+
     public N getNodeId() {
         return nodeId;
     }
@@ -107,6 +111,10 @@ public class GraphNode<R,N> {
 
     public int getY() {
         return y;
+    }
+
+    public NodeType getTileType() {
+        return tileType;
     }
 
     // Setters
