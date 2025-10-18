@@ -3,7 +3,7 @@ package io.github.whack25.graphGen;
 public class GraphGeneratorTester {
     public void Test() {
         GraphGenerator generator = new GraphGenerator();
-        int[][] graph = generator.generateGraph(20, 25, 0.5);
+        int[][] graph = generator.generateGraph(20, 25, 0.4);
 
         for (int i = 0; i < 20; i++) {
             for (int j = 0; j < 25; j++) {
