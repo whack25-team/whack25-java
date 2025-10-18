@@ -8,4 +8,12 @@ public class ConnectedNode<R, N> {
         this.node = node;
         this.edgeWeight = edgeWeight;
     }
+
+    @Override
+    public String toString() {
+        return "ConnectedNode{" +
+                "node=" + node.getNodeId() +
+                ", edgeWeight=" + edgeWeight +
+                '}';
+    }
 }
