@@ -37,4 +37,9 @@ public class RobotMovement<R, N> {
     public boolean readyToMoveNodes() {
         return remainingProgression == 0;
     }
+
+    // Getters
+    public Robot<R, N> getRobot() {
+        return robot;
+    }
 }
