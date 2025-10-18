@@ -39,6 +39,31 @@ public class Graph<N, R> {
         Graph<String, String> graph = new Graph<>(nodes);
 
         GraphNode<String, String> nextNode = nodeE.getNextNodeOnPath("A");
+
         System.out.println(nextNode);
+
+        // Testing with robot occupiers
+
+        // Add a robot moving into node E from an arbitrary node, with an edge weight of 2
+        nodeE.addOccupier(new RobotMovement<>(new Robot<>("Robo 1", "A"), 2));
+
+        System.out.println(nodeE);
+        nodeE.tick();
+        System.out.println(nodeE);
+        nodeE.tick();
+        System.out.println(nodeE);
+        System.out.println("----");
+        nodeE.tick();
+        System.out.println(nodeE);
+        System.out.println(nodeC);
+        nodeC.tick();
+        System.out.println(nodeC);
+        System.out.println("----");
+        nodeC.tick();
+        System.out.println(nodeC);
+        System.out.println(nodeA);
+        nodeA.tick();
+        System.out.println(nodeA);
+
     }
 }
