@@ -35,7 +35,7 @@ public class GraphNode<R,N> {
                     for (ConnectedNode<R,N> neighbour : this.getNeighbours()) {
                         if (neighbour.node.nodeId.equals(nextNode.nodeId)) {
                             // Found the edge to the next node
-                            RobotMovement<R,N> newMovement = new RobotMovement<>(movement.getRobot(), neighbour.edgeWeight);
+                            RobotMovement<R,N> newMovement = new RobotMovement<>(movement.getRobot(), neighbour.edgeWeight, this.x, this.y);
                             nextNode.occupiers.add(newMovement);
                             break;
                         }
@@ -97,6 +97,10 @@ public class GraphNode<R,N> {
         return this.neighbours;
     }
 
+    public List<RobotMovement<R,N>> getOccupiers() {
+        return this.occupiers;
+    }
+
     public N getNodeId() {
         return nodeId;
     }
@@ -107,6 +111,10 @@ public class GraphNode<R,N> {
 
     public int getY() {
         return y;
+    }
+
+    public NodeType getTileType() {
+        return tileType;
     }
 
     // Setters
