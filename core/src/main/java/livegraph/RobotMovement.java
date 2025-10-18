@@ -10,11 +10,15 @@ public class RobotMovement<R, N> {
     private int remainingProgression;
     private final int totalEdgeWeight;
     private Robot<R, N> robot;
+    private int originX; // The origin x coordinate when starting movement (from the previous tile)
+    private int originY; // The origin y coordinate when starting movement (from the previous tile)
 
-    public RobotMovement(Robot<R, N> robot, int edgeWeight) {
+    public RobotMovement(Robot<R, N> robot, int edgeWeight, int originX, int originY) {
         this.robot = robot;
         this.totalEdgeWeight = edgeWeight;
         this.remainingProgression = edgeWeight;
+        this.originX = originX;
+        this.originY = originY;
     }
 
     public int getRemainingProgression() {
@@ -41,6 +45,18 @@ public class RobotMovement<R, N> {
     // Getters
     public Robot<R, N> getRobot() {
         return robot;
+    }
+
+    public int getOriginX() {
+        return originX;
+    }
+
+    public int getOriginY() {
+        return originY;
+    }
+
+    public int getTotalEdgeWeight() {
+        return totalEdgeWeight;
     }
 
     @Override
