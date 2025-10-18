@@ -75,6 +75,8 @@ public class GraphNode<R,N> {
 //                    System.out.print(node.nodeId + " -> ");
 //                }
 //                System.out.println("(END)");
+                if (currentPath.path.size() < 2) return null; // Already at destination
+
                 return currentPath.path.get(1); // Return the next node after the start node
             }
 
