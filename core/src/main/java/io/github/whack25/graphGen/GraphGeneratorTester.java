@@ -11,6 +11,7 @@ public class GraphGeneratorTester {
             }
             System.out.println();
         }
+        generator.convertGraphToCellGraph(graph);
     }
 
     public static void main(String[] args) {
