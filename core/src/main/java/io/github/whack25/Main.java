@@ -30,6 +30,7 @@ public class Main extends ApplicationAdapter {
     Music music;
     Sprite bucketSprite;
     private Graph<String, String> gameGraph;
+    private final int MAX_FRAME_RATE = 10;
 
     @Override
     public void create() {
@@ -54,6 +55,7 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void render() {
+        waitBeforeFrame();
         input();
         logic();
         draw();
@@ -68,6 +70,24 @@ public class Main extends ApplicationAdapter {
         viewport.update(width, height, true);
     }
 
+    /**
+     * Wait for frame stabilisation to cap frame rate.
+     */
+    private void waitBeforeFrame() {
+        float delta = Gdx.graphics.getDeltaTime();
+        float targetFrameTime = 1.0f / MAX_FRAME_RATE;
+        if (delta < targetFrameTime) {
+            try {
+                Thread.sleep((long) ((targetFrameTime - delta) * 1000));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        } else {
+            // Frame took longer than target frame time; no wait needed
+            System.out.println("Warning: Frame time exceeded target frame time: " + delta + " seconds");
+        }
+    }
+
     private void input() {
 //        float speed = .25f;
 //        float delta = Gdx.graphics.getDeltaTime(); // time since last frame
@@ -80,7 +100,7 @@ public class Main extends ApplicationAdapter {
     }
 
     private void logic() {
-
+        gameGraph.tick();
     }
 
     private void draw() {

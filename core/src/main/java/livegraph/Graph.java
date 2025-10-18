@@ -54,6 +54,18 @@ public class Graph<N, R> {
         }
     }
 
+    // During gameplay
+    /**
+     * Progress all robot movements in the graph by one tick.
+     */
+    public void tick() {
+        for (GraphNode<R,N> node : nodes.values()) {
+            node.tick();
+        }
+    }
+
+    // Getters
+
     /**
      * Gets the nodes in the graph.
      * @return the nodes in the graph
