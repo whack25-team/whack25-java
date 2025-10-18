@@ -4,10 +4,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Graph<N, R> {
-    HashMap<N, GraphNode<R, N>> nodes;
+    private HashMap<N, GraphNode<R, N>> nodes;
+    private final int gridWidth;
+    private final int gridHeight;
 
-    public Graph(HashMap<N, GraphNode<R, N>> nodes) {
+    /**
+     * Adds a graph with the nodes given. Note, gridWidth and gridHeight are only for reference and not enforced in any way.
+     * Nodes may have coordinates outside of this range, and duplicates coordinates are not supported but are not checked for.
+     * @param nodes
+     * @param gridWidth
+     * @param gridHeight
+     */
+    public Graph(HashMap<N, GraphNode<R, N>> nodes, int gridWidth, int gridHeight) {
         this.nodes = nodes;
+        this.gridWidth = gridWidth;
+        this.gridHeight = gridHeight;
     }
 
     public static void main(String[] args) {
@@ -36,7 +47,7 @@ public class Graph<N, R> {
         nodes.put("C", nodeC);
         nodes.put("D", nodeD);
         nodes.put("E", nodeE);
-        Graph<String, String> graph = new Graph<>(nodes);
+        Graph<String, String> graph = new Graph<>(nodes, 10, 10);
 
         GraphNode<String, String> nextNode = nodeE.getNextNodeOnPath("A");
 
