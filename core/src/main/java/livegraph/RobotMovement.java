@@ -47,6 +47,18 @@ public class RobotMovement<R, N> {
         return robot;
     }
 
+    public int getOriginX() {
+        return originX;
+    }
+
+    public int getOriginY() {
+        return originY;
+    }
+
+    public int getTotalEdgeWeight() {
+        return totalEdgeWeight;
+    }
+
     @Override
     public String toString() {
         return "RobotMovement{" +

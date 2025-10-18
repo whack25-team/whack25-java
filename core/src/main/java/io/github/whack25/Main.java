@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import livegraph.Graph;
 import livegraph.GraphNode;
 import livegraph.NodeType;
+import livegraph.RobotMovement;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {
@@ -31,7 +32,7 @@ public class Main extends ApplicationAdapter {
     Music music;
     Sprite bucketSprite;
     private Graph<String, String> gameGraph;
-    private final int MAX_FRAME_RATE = 10;
+    private final int MAX_FRAME_RATE = 2;
 
     @Override
     public void create() {
@@ -57,9 +58,9 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void render() {
-        waitBeforeFrame();
-        input();
         logic();
+        // waitBeforeFrame();
+        // input();
         draw();
 //        ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
 //        batch.begin();
@@ -106,6 +107,8 @@ public class Main extends ApplicationAdapter {
     }
 
     private void draw() {
+        System.out.println(System.currentTimeMillis()+": drawing new frame at time");
+
         ScreenUtils.clear(Color.BLACK);
         viewport.apply();
         spriteBatch.setProjectionMatrix(viewport.getCamera().combined);
@@ -119,13 +122,25 @@ public class Main extends ApplicationAdapter {
 
         spriteBatch.draw(backgroundTexture, 0, 0, worldWidth, worldHeight);
 
+        // Add background textures
         for (GraphNode<String, String> node : gameGraph.getNodes().values()) {
             spriteBatch.draw(node.getTileType() == NodeType.HOUSE ? houseTexture :
                              node.getTileType() == NodeType.ROAD ? roadTexture :
                              grassTexture,
                 node.getX(), node.getY(), 1,1);
+
+        }
+
+        // Draw robots
+        for (GraphNode<String, String> node : gameGraph.getNodes().values()) {
             if (!node.getOccupiers().isEmpty()) {
-                spriteBatch.draw(carTexture, node.getX()+0.25f, node.getY()+0.25f, 0.5f,0.5f);
+                for (RobotMovement<String, String> movement : node.getOccupiers()) {
+                    float progress = 1.0f - ((float) movement.getRemainingProgression() / (float) movement.getTotalEdgeWeight());
+                    spriteBatch.draw(carTexture,
+                        0.25f+node.getX()*progress + movement.getOriginX()*(1-progress),
+                        0.25f+node.getY()*progress + movement.getOriginY()*(1-progress),
+                        0.5f,0.5f);
+                }
             }
         }
 
