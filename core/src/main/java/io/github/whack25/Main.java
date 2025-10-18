@@ -2,28 +2,45 @@ package io.github.whack25;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
+
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {
     private SpriteBatch spriteBatch;
-    private Texture image;
     FitViewport viewport;
-    Texture backgroundTexture;
-    Texture bucketTexture;
-    Texture dropTexture;
-    Sound dropSound;
-    Music music;
-    Sprite bucketSprite;
+    private static final int TILE_SIZE = 32;
+    private static final int ROWS = 2;
+    private static final int COLS = 2;
 
+    // Textures and sprites declaration
+    private Texture roadUpTex;
+    private Texture roadDownTex;
+    private Texture roadLeftTex;
+    private Texture roadRightTex;
+    private Texture grassTex;
+    private Texture carTex;
+    private Texture collisionTex;
+    private Texture houseTex;
+    private Texture junctionTex;
+
+    private Cell[][] grid;
+
+
+    private static class Cell {
+        // Cell properties
+        boolean isRoad;
+        boolean hasCar;
+        boolean hasCollision;
+        boolean hasHouse;
+        boolean isJunction;
+        boolean isGrass;
+    }
+    
     @Override
     public void create() {
         /* Load textures, sounds here - you should not create these at constructor
@@ -31,15 +48,37 @@ public class Main extends ApplicationAdapter {
         */
 
         spriteBatch = new SpriteBatch();
-        image = new Texture("libgdx.png");
         viewport = new FitViewport(8,5);
-        backgroundTexture = new Texture("background.png");
-        bucketTexture = new Texture("bucket.png");
-        dropTexture = new Texture("drop.png");
-        dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.mp3"));
-        music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
-        bucketSprite = new Sprite(bucketTexture);
-        bucketSprite.setSize(1,1);
+
+        roadUpTex = new Texture("roadUp.png");
+        roadDownTex = new Texture("roadDown.png");
+        roadLeftTex = new Texture("roadLeft.png");
+        roadRightTex = new Texture("roadRight.png");
+        grassTex = new Texture("grass.png");
+        carTex = new Texture("car.png");
+        collisionTex = new Texture("collision.png");
+        houseTex = new Texture("house.png");
+        junctionTex = new Texture("junction.png");
+
+        grid = new Cell[ROWS][COLS];
+
+        // Initialize each Cell to avoid NullPointerException
+        for (int y = 0; y < ROWS; y++) {
+            for (int x = 0; x < COLS; x++) {
+                grid[y][x] = new Cell();
+            }
+        }
+
+        grid[0][0].isRoad = true;
+        grid[0][1].isRoad = true;
+        grid[1][0].isGrass = true;
+        grid[1][1].hasHouse = true;
+
+        // Place a c
+        grid[0][1].hasCar = true;
+
+        // Place a collision
+        grid[0][0].hasCollision = true;
     }
 
     @Override
@@ -61,12 +100,6 @@ public class Main extends ApplicationAdapter {
     private void input() {
         float speed = .25f;
         float delta = Gdx.graphics.getDeltaTime(); // time since last frame
-
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            bucketSprite.translateX(speed * delta);
-        } else if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            bucketSprite.translateX(-speed * delta);
-        }
     }
 
     private void logic() {
@@ -85,16 +118,54 @@ public class Main extends ApplicationAdapter {
         float worldWidth = viewport.getWorldWidth();
         float worldHeight = viewport.getWorldHeight();
 
-        spriteBatch.draw(backgroundTexture, 0, 0, worldWidth, worldHeight);
-
-        bucketSprite.draw(spriteBatch);
+        drawGrid();
 
         spriteBatch.end();
+    }
+
+    private Texture backgroundChecker(Cell cell, int x, int y) {
+        if (cell.isRoad) {
+            if (y - 1 >= 0 && grid[y-1][x].isRoad) return roadUpTex;
+            if (y + 1 < ROWS && grid[y+1][x].isRoad) return roadDownTex;
+            if (x - 1 >= 0 && grid[y][x-1].isRoad) return roadLeftTex;
+            if (x + 1 < COLS && grid[y][x+1].isRoad) return roadRightTex;
+            return roadUpTex; // fallback for an isolated road cell
+        } else if (cell.isGrass) {
+            return grassTex;
+        } else if (cell.hasHouse) {
+            return houseTex;
+        } else if (cell.isJunction) {
+            return junctionTex;
+        } else {
+            return grassTex; // default
+        }
+    }
+
+    private void drawGrid() {
+        // Background layer
+        for (int y = 0; y < ROWS; y++) {
+            for (int x = 0; x < COLS; x++) {
+                Cell cell = grid[y][x];
+                Texture tex = backgroundChecker(cell, x, y);
+                spriteBatch.draw(tex, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            }
+        }
+
+        // Foreground layer
+        for (int y = 0; y < ROWS; y++) {
+            for (int x = 0; x < COLS; x++) {
+                Cell cell = grid[y][x];
+                if (cell.hasCar) {
+                    spriteBatch.draw(carTex, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                } else if (cell.hasCollision) {
+                    spriteBatch.draw(collisionTex, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                }
+            }
+        }
     }
 
     @Override
     public void dispose() {
         spriteBatch.dispose();
-        image.dispose();
     }
 }
