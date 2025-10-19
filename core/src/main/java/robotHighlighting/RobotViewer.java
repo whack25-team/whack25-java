@@ -17,7 +17,7 @@ public class RobotViewer {
     public RobotViewer() {}
 
     // gets current node and robot from the coordinates of the player click
-    public void setNewRobot(double x, double y, Graph<Integer> graph) {
+    public boolean setNewRobot(double x, double y, Graph<Integer> graph) {
         System.out.println("set new robot");
         this.currentNode = graph.getNodeByCoordinates((int) x, (int) y);
 
@@ -32,7 +32,9 @@ public class RobotViewer {
                 }
             }
             robot = closest;
+            return true;
         }
+        return false;
     }
 
         /**
@@ -41,25 +43,28 @@ public class RobotViewer {
          */
     public boolean updateRobotLocation() {
         System.out.println("update new robot: " + currentNode);
-        // check if robot still occupier
+
+        if (currentNode == null) return false;
         if (currentNode.getOccupiers().contains(robot)) {
             return true;
         } else { // check adjacent nodes for robot
-            List<ConnectedNode<Integer, Integer>> neighboursOut = currentNode.getNeighbours();
-            System.out.println(neighboursOut);
-            for (int j = 0; j < neighboursOut.size(); j++) {
-                List<ConnectedNode<Integer, Integer>> neighbours = neighboursOut.get(j).node.getNeighbours();
-                System.out.println(neighbours);
-                for (int i = 0; i < neighbours.size(); i++) {
-                    if (neighbours.get(i).node.getOccupiers().contains(robot)) {
+
+            List<ConnectedNode<Integer, Integer>> neighbours = currentNode.getNeighbours();
+            System.out.println(neighbours);
+            for (int i = 0; i < neighbours.size(); i++) {
+                List<RobotMovement<Integer, Integer>> lst = neighbours.get(i).node.getOccupiers();
+                for (int j = 0 ; j < lst.size(); j++) {
+                    if (robot != null && lst.get(j).getRobot().robotID == robot.getRobot().robotID) {
                         currentNode = neighbours.get(i).node;
-                        System.out.println("found");
+                        robot = lst.get(j);
                         return true;
-                    } 
+                    }
+
                 }
-            }
-    
+   
+            } 
         }
+        
         System.out.println("delete new robot");
         return false;
     }
