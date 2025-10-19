@@ -15,6 +15,7 @@ public class GraphNode<R,N> {
     private int maxOccupiers = 1;
     private int disabledForGoes = 0; // number of ticks this node is disabled for, no robots can enter, but robots can leave
     private double CELL_BLOCK_PROBABILITY_QUEUE = 0.20; // Probability of blocking a cell during a queue
+    private int waitToMove = 0; // Goes to wait before moving due to congestion / no available path
 
     public GraphNode(N nodeId, int x, int y, NodeType tileType, List<ConnectedNode<R,N>> neighbours, List<RobotMovement<R,N>> occupiers) {
         this.nodeId = nodeId;
@@ -54,7 +55,7 @@ public class GraphNode<R,N> {
                                 System.out.println("Robot " + movement.getRobot().robotID + " at node " + this.nodeId + " cannot move to node " + nextNode.nodeId + " as it is full, staying put.");
                                 newOccupiers.add(movement);
                                 if (Math.random() < CELL_BLOCK_PROBABILITY_QUEUE) { // DISABLE <--- disable this if you want to demo traffic jams
-                                    this.disabledForGoes = (int) (Math.random() * 100); // Block this node for 1-10 ticks due to congestion
+                                    this.disabledForGoes = (int) (Math.random() * 10); // Block this node for 1-10 ticks due to congestion
                                     System.out.println("Node " + this.nodeId + " is now blocked for " + this.disabledForGoes + " ticks due to congestion.");
                                 }
                                 break;
@@ -68,7 +69,10 @@ public class GraphNode<R,N> {
                 } else {
                     // No path found, robot stays at this node
                     System.out.println("Robot "+movement.getRobot().robotID+" at node "+this.nodeId+" has no path to destination "+movement.getRobot().destinationNodeId+", staying put.");
-                    // newOccupiers.add(movement);
+                    if (tileType != NodeType.HOUSE) { // Delete if spawn-trapped (may be an error in graph generation)
+                        newOccupiers.add(movement);
+                        waitToMove = (int) (Math.random()*20);
+                    }
                 }
             } else {
                 // Robot is still moving into this node, stays here
