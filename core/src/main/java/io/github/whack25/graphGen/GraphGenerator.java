@@ -10,9 +10,18 @@ public class GraphGenerator {
 
     final int EDGE_STRAIGHT = 3;
     final int EDGE_UTURN= 5;
-
-    public Graph<Integer,Integer> generate(int width, int height, double coverageGoal) {
-        return convertGraphToCellGraph(generateGraph(width, height, coverageGoal));
+    /**
+     * Generates a graph with the specified dimensions and coverage goal, creates houses on it, and displays it.
+     * @param width Width of the graph
+     * @param height Height of the graph
+     * @param coverageGoal Desired coverage as a fraction (0.0 to 1.0)
+     * @return Generated graph
+     */
+    public Graph<Integer,Integer> generate(int width, int height, double coverageGoal, double probability) {
+        GraphData graphData = convertGraphToCellGraph(generateGraph(width, height, coverageGoal));
+        createHousesOnGraph(graphData, probability);
+        //displayGraph(graphData, 0, 0);
+        return graphData.graph;
     }
 
     /**
@@ -42,10 +51,10 @@ public class GraphGenerator {
                 coverage++;
             }
 
-            int direction = 0; // holds last direction. north = 0, east = 1, south = 2, west = 3
+            int direction = (int)(Math.random() * 4); // holds last direction. north = 0, east = 1, south = 2, west = 3
             int pathLength = 0;
 
-            while (coverage / (double)(width * height) < coverageGoal) {
+            while (coverage / (double)(width * height) < coverageGoal) { // while not maxed out coverage
 
                 int length = (int)(Math.random() * 5) + 2; // random length between 2 and 6
 
@@ -111,7 +120,7 @@ public class GraphGenerator {
                     if (graph[xInc][yInc] == 0) { // if not path
 
                             int paths = 0;
-                            switch (newDirection) {
+                            switch (newDirection) { // stop adding paths if there is a path to the side of the next one, avoids 2+ thick line of junctions
                                 case 0: 
                                     if (xInc < width - 1 && graph[xInc+1][yInc] == 1) paths++;
                                     if (xInc > 0 && graph[xInc-1][yInc] == 1) paths++;
@@ -141,7 +150,7 @@ public class GraphGenerator {
                     }
                 }
 
-                // try end path
+                // try end whole path randomly
                 pathLength += i;
                 if ((Math.random() * pathLength) >= 15) {
                     break;
@@ -150,7 +159,7 @@ public class GraphGenerator {
                 if (i == length) {
                     x = newX;
                     y = newY;
-                } else {
+                } else { // overlap occurred, set x and y to last valid position
                     x = x + (newDirection == 1 ? i - 1 : (newDirection == 3 ? -i + 1 : 0));
                     y = y + (newDirection == 2 ? i - 1   : (newDirection == 0 ? -i + 1 : 0));
                 }
@@ -164,7 +173,7 @@ public class GraphGenerator {
                 x = (int)(Math.random() * width);
                 y = (int)(Math.random() * height);
 
-                if (graph[x][y] > 0) { // if path
+                if (graph[x][y] > 0) { // if not empty cell
                     found = true;
                 }
             }
@@ -175,6 +184,7 @@ public class GraphGenerator {
             for (int j = 0; j < height; j++) {
                 if (graph[i][j] > 0) {
                     int paths = 0;
+                    // count adjacent paths
                     if (i < width - 1 && graph[i+1][j] > 0) paths++;
                     if (i > 0 && graph[i-1][j] > 0) paths++;
                     if (j < height - 1 && graph[i][j+1] > 0) paths++;
@@ -192,7 +202,7 @@ public class GraphGenerator {
 
     // generate ID for nodes
     public int GenerateId(int x, int y, int width) {
-        return x + y * width;
+        return x + y * width + 1;
     }
 
     /**
@@ -200,7 +210,7 @@ public class GraphGenerator {
      * @param table
      * @return
      */
-    public Graph<Integer, Integer> convertGraphToCellGraph(int[][] table) {
+    public GraphData convertGraphToCellGraph(int[][] table) {
         Graph<Integer, Integer> graph = new Graph<Integer, Integer>(new HashMap<Integer, GraphNode<Integer, Integer>>(), table.length * 2, table[0].length * 2);
 
         int width = table.length;
@@ -222,6 +232,9 @@ public class GraphGenerator {
                 }
             }
         }
+
+        // add edges for all nodes 
+        // done in sets of 2x2 cells as per graph node
 
         for (int i = 0; i < width; i++) {
             //System.out.println("row: " + i);
@@ -246,7 +259,7 @@ public class GraphGenerator {
                     directions[0] = 1;
                     sum++;
                 }
-
+                // count adjacent adjacent-paths to find cornders
                 boolean isAdjacent = false;
                 for (int d = 0; d < 4; d++) {
                     if (directions[d] == 1 && directions[(d+1) % 4] == 1) {
@@ -259,8 +272,26 @@ public class GraphGenerator {
                 /*System.out.println("Node at " + x + ", " + y 
                 + " with objs at directions: N:" + directions[0] + " E:" + directions[1] + " S:" + directions[2] + " W:" + directions[3]
                  + " with " + table[i][j] + "type.");*/
+
+                // BEHOLD! THE EDGE ADDING STATEMENT OF DOOM
+
+                // adds nodes within 2x2 cell and to the next 2x2 cells to the bottom and right
                 if (nodeTable[x][y] > 0) {
-                    if (isAdjacent) { // add corner edges
+                    if (sum > 2) { // is junction
+                        graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_STRAIGHT);
+                        graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_STRAIGHT);
+                        graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_STRAIGHT);
+                        graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x+1][y], EDGE_STRAIGHT);
+                        if (directions[2] == 1) { // if south path solid
+                            graph.addUnidirectionalEdge(nodeTable[x][y+2], nodeTable[x][y+1], EDGE_STRAIGHT);
+                            graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x+1][y+2], EDGE_STRAIGHT);
+                        }
+                        if (directions[1] == 1) { // if north path solid
+                            graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+2][y], EDGE_STRAIGHT);
+                            graph.addUnidirectionalEdge(nodeTable[x+2][y+1], nodeTable[x+1][y+1], EDGE_STRAIGHT);
+                        }
+                    }
+                    else if (isAdjacent) { // add corner edges
                         if (directions[2] == 1 && directions[3] == 1) { // north and east empty
                             graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_STRAIGHT);
                             graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_STRAIGHT);
@@ -316,13 +347,13 @@ public class GraphGenerator {
                         graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x][y], EDGE_UTURN);
                         graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x+1][y], EDGE_UTURN);
                         graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_UTURN);
-                    } else if (directions[0] == 1) {
+                    } else if (directions[0] == 1) { // only connect north
                         graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_STRAIGHT);
                         graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_STRAIGHT);
                         graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x][y], EDGE_STRAIGHT);
                         graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_UTURN);
                         graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x][y], EDGE_UTURN);
-                    } else if (directions[1] == 1) {
+                    } else if (directions[1] == 1) { // only connection east
                         graph.addUnidirectionalEdge(nodeTable[x+2][y+1], nodeTable[x+1][y+1], EDGE_STRAIGHT);
                         graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_STRAIGHT);
                         graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x][y], EDGE_STRAIGHT);
@@ -330,7 +361,7 @@ public class GraphGenerator {
                         graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+2][y], EDGE_STRAIGHT);
                         graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x+1][y], EDGE_UTURN);
                         graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_UTURN);
-                    } else if (directions[2] == 1) {
+                    } else if (directions[2] == 1) { // only conneciton south
                         graph.addUnidirectionalEdge(nodeTable[x][y+2], nodeTable[x][y+1], EDGE_STRAIGHT);
                         graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x][y], EDGE_STRAIGHT);
                         graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_STRAIGHT);
@@ -338,7 +369,7 @@ public class GraphGenerator {
                         graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x+1][y+2], EDGE_STRAIGHT);
                         graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_UTURN);
                         graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x+1][y+1], EDGE_UTURN);
-                    } else if (directions[3] == 1) {
+                    } else if (directions[3] == 1) { // only connection west
                         graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_STRAIGHT);
                         graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_STRAIGHT);
                         graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_STRAIGHT);
@@ -349,20 +380,99 @@ public class GraphGenerator {
             }
         }
 
-        return graph;
+        return new GraphData(graph, nodeTable);
     }
 
-    public void displayGraph(int[][] graph, int x, int y) {
+    public void displayGraph(GraphData graph, int x, int y) {
 
-        for (int i = 0; i < graph.length; i++) {
-            for (int j = 0; j < graph[i].length; j++) {
-                System.out.print(graph[i][j] == 0 ? "  " : ((i == x && j == y) ? "X " : "O" + " "));
+        for (int i = 0; i < graph.nodeTable.length; i++) {
+            for (int j = 0; j < graph.nodeTable[i].length; j++) {
+                if (i == x && j == y) {
+                    System.out.print("X ");
+                } else if (graph.nodeTable[i][j] == 0) {
+                    System.out.print("  ");
+                } else if (graph.graph.getNode(graph.nodeTable[i][j]).getTileType() == NodeType.HOUSE) {
+                    System.out.print("H ");
+                } else {
+                    System.out.print("- ");
+                }
             }
             System.out.println();
         }
     }
+    /**
+     * Creates houses on the graph at empty nodes with a given probability.
+     * @param graphData
+     * @param probability
+     */
+    public void createHousesOnGraph(GraphData graphData, double probability) {
+        for (int i = 0; i < graphData.getNodeTable().length; i++) {
+            for (int j = 0; j < graphData.getNodeTable()[i].length; j++) {
+                if (graphData.getNodeTable()[i][j] == 0) {
+                    if (Math.random() < probability) {
+                        
+                        ArrayList<Integer> directions = new ArrayList<Integer>();
+                        if (i > 0 && graphData.getNodeTable()[i-1][j] > 0 && graphData.graph.getNode(graphData.getNodeTable()[i-1][j]).getTileType() == NodeType.ROAD) {
+                            directions.add(3); // west
+                        } else if (i < graphData.getNodeTable().length - 1 && graphData.getNodeTable()[i+1][j] > 0 && graphData.graph.getNode(graphData.getNodeTable()[i+1][j]).getTileType() == NodeType.ROAD) {
+                            directions.add(1); // east
+                        } else if (j > 0 && graphData.getNodeTable()[i][j-1] > 0 && graphData.graph.getNode(graphData.getNodeTable()[i][j-1]).getTileType() == NodeType.ROAD) {
+                            directions.add(0); // north
+                        } else if (j < graphData.getNodeTable()[i].length - 1 && graphData.getNodeTable()[i][j+1] > 0 && graphData.graph.getNode(graphData.getNodeTable()[i][j+1]).getTileType() == NodeType.ROAD) {
+                            directions.add(2); // south
+                        }
 
-    public void createHousesOnGraph(Graph graph, int[][] nodeTable) {
+                        //System.out.println("Possible directions for house at " + i + ", " + j + ": " + directions.toString());
+                        if (!directions.isEmpty()) {
+                            int direction = directions.get((int)(Math.random() * directions.size()));
+                            // create house facing direction
+                            graphData.nodeTable[i][j] = GenerateId(i, j, graphData.getNodeTable().length);
+                            graphData.graph.addNode( new GraphNode<>(graphData.nodeTable[i][j], i, j, NodeType.HOUSE, new ArrayList<>(), new ArrayList<>()));
+                            
+                            int a = i;
+                            int b = j;
 
+                            switch (direction) {
+                                case 0: 
+                                    b -= 1; // north
+                                    break;
+                                case 1: 
+                                    a += 1; // east
+                                    break;
+                                case 2: 
+                                    b += 1; // south
+                                    break;
+                                case 3: 
+                                    a -= 1; // west
+                                    break;
+                                default: 
+                                    b = 0;
+                                    break;
+                            }
+                            //displayGraph(graphData, i, j);
+                            //System.out.println("Creating house at " + i + ", " + j + " facing direction " + direction + " connecting to road at " + a + ", " + b);
+                            graphData.graph.addUnidirectionalEdge(graphData.nodeTable[i][j], graphData.nodeTable[a][b], EDGE_STRAIGHT);
+                            graphData.graph.addUnidirectionalEdge(graphData.nodeTable[a][b], graphData.nodeTable[i][j], EDGE_STRAIGHT);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public class GraphData {
+        public Graph<Integer, Integer> graph;
+        public int[][] nodeTable;
+
+        public GraphData(Graph<Integer, Integer> graph, int[][] nodeTable) {
+            this.graph = graph;
+            this.nodeTable = nodeTable;
+        }
+        public Graph<Integer, Integer> getGraph() {
+            return graph;
+        }
+        public int[][] getNodeTable() {
+            return nodeTable;
+        }
     }
 }

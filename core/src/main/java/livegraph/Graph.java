@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Graph<N, R> {
-    private HashMap<N, GraphNode<R, N>> nodes;
+    HashMap<N, GraphNode<R, N>> nodes;
     private final int gridWidth;
     private final int gridHeight;
 
@@ -25,6 +25,15 @@ public class Graph<N, R> {
         this.nodes = new HashMap<>();
         this.gridWidth = gridWidth;
         this.gridHeight = gridHeight;
+    }
+
+    /**
+     * Gets a node from the graph.
+     * @param node the ID of the node to get
+     * @return the node, or null if not found
+     */
+    public GraphNode<R,N> getNode(N node) {
+        return nodes.get(node);
     }
 
     /**
