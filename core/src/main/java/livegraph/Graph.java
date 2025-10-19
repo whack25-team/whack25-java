@@ -129,7 +129,7 @@ public class Graph<N> {
                 } else { // end node determined from before, use the current node as the start node
                     Robot<Integer,N> robot = new Robot<>(robotCounter++, endNodeR.getNodeId());
                     node.addOccupier(new RobotMovement<>(robot, 1, node.getX(), node.getY()));
-                    System.out.println("Spawned new robot "+robot.robotID+" at node "+node.getNodeId()+" with destination "+endNodeR.getNodeId());
+                    //System.out.println("Spawned new robot "+robot.robotID+" at node "+node.getNodeId()+" with destination "+endNodeR.getNodeId());
                     endNodeR = null; // reset for next spawn
                     onRobotSpawn.run();
                 }

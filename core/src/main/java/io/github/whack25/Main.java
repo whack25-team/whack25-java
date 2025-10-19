@@ -193,7 +193,7 @@ public class Main extends ApplicationAdapter {
     }
 
     private void draw() {
-        System.out.println(System.currentTimeMillis()+": drawing new frame at time");
+        //System.out.println(System.currentTimeMillis()+": drawing new frame at time");
 
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);

@@ -18,11 +18,12 @@ public class RobotViewer {
 
     // gets current node and robot from the coordinates of the player click
     public void setNewRobot(double x, double y, Graph<Integer> graph) {
+        System.out.println("set new robot");
         this.currentNode = graph.getNodeByCoordinates((int) x, (int) y);
 
         if (currentNode.getOccupiers().size() > 0) {
             RobotMovement<Integer, Integer> closest = currentNode.getOccupiers().get(0);
-            
+            // find closest robot to click
             for (int i = 1; i < currentNode.getOccupiers().size(); i++) {
                 RobotMovement<Integer, Integer> currOccupier = currentNode.getOccupiers().get(i);
                 Point coords = calcRobotCoordinates(currentNode, currOccupier);
@@ -39,6 +40,7 @@ public class RobotViewer {
          * @return true if found and updated, false if not found
          */
     public boolean updateRobotLocation() {
+        System.out.println("update new robot: " + currentNode);
         // check if robot still occupier
         if (currentNode.getOccupiers().contains(robot)) {
             return true;
@@ -51,6 +53,7 @@ public class RobotViewer {
                 } 
             }
         }
+        System.out.println("delete new robot");
         return false;
     }
 
