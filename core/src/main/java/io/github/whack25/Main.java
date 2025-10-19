@@ -13,8 +13,12 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+
 import io.github.whack25.graphGen.GraphGenerator;
-import livegraph.*;
+import livegraph.Graph;
+import livegraph.GraphNode;
+import livegraph.NodeType;
+import livegraph.RobotMovement;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {
@@ -142,7 +146,8 @@ public class Main extends ApplicationAdapter {
 //        float speed = .25f;
 //        float delta = Gdx.graphics.getDeltaTime(); // time since last frame
 //
-//        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+        if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) && Gdx.input.isKeyPressed(Input.Buttons.LEFT)) {
+        }
 //            bucketSprite.translateX(speed * delta);
 //        } else if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
 //            bucketSprite.translateX(-speed * delta);
