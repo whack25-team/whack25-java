@@ -17,7 +17,7 @@ public class GraphGenerator {
      * @param coverageGoal Desired coverage as a fraction (0.0 to 1.0)
      * @return Generated graph
      */
-    public Graph<Integer,Integer> generate(int width, int height, double coverageGoal, double probability) {
+    public Graph<Integer> generate(int width, int height, double coverageGoal, double probability) {
         GraphData graphData = convertGraphToCellGraph(generateGraph(width, height, coverageGoal));
         createHousesOnGraph(graphData, probability);
         //displayGraph(graphData, 0, 0);
@@ -211,7 +211,7 @@ public class GraphGenerator {
      * @return
      */
     public GraphData convertGraphToCellGraph(int[][] table) {
-        Graph<Integer, Integer> graph = new Graph<Integer, Integer>(new HashMap<Integer, GraphNode<Integer, Integer>>(), table.length * 2, table[0].length * 2);
+        Graph<Integer> graph = new Graph<Integer>(new HashMap<Integer, GraphNode<Integer, Integer>>(), table.length * 2, table[0].length * 2);
 
         int width = table.length;
         int height = table[0].length;
@@ -461,14 +461,14 @@ public class GraphGenerator {
     }
 
     public class GraphData {
-        public Graph<Integer, Integer> graph;
+        public Graph<Integer> graph;
         public int[][] nodeTable;
 
-        public GraphData(Graph<Integer, Integer> graph, int[][] nodeTable) {
+        public GraphData(Graph<Integer> graph, int[][] nodeTable) {
             this.graph = graph;
             this.nodeTable = nodeTable;
         }
-        public Graph<Integer, Integer> getGraph() {
+        public Graph<Integer> getGraph() {
             return graph;
         }
         public int[][] getNodeTable() {

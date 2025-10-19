@@ -34,7 +34,7 @@ public class Graph<N> {
      * @param node the ID of the node to get
      * @return the node, or null if not found
      */
-    public GraphNode<R,N> getNode(N node) {
+    public GraphNode<Integer,N> getNode(N node) {
         return nodes.get(node);
     }
 
