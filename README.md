@@ -1,33 +1,42 @@
-# WHack2025
+# WHack2025 Project - Hot N Cold
 
-A [libGDX](https://libgdx.com/) project generated with [gdx-liftoff](https://github.com/libgdx/gdx-liftoff).
+Robots start at a given house and have a destination house to reach in the shortest amount of time.
 
-This project was generated with a template including simple application launchers and an `ApplicationAdapter` extension that draws libGDX logo.
+Robots are designed to travel as follows:
+- Avoid traffic jams
+- If multiple routes are available of similar length, evenly distribue traffic down the routes
+- Avoid deadlocks where possible
+- Travel on the right side of the road
 
-## Platforms
+# Situations
+- Robots may get stuck in traffic jams
+- The world can be modified to make it so that there is no available path to the destination
+- Blockages may occur randomly on roads, denoted by red cells
+- Some robots/cars may intentionally and temporarily cause a blockage that forces other robots to explicitly avoid the area
+- Terrain is generated at random
 
-- `core`: Main module with the application logic shared by all platforms.
-- `lwjgl3`: Primary desktop platform using LWJGL3; was called 'desktop' in older docs.
+# Constraints
+- Robots cannot travel off-road
+- No two robots can occupy the same tile (note, this is technically adjustable in the code)
 
-## Gradle
+# Adjustable parameters
+- Time taken to traverse edges
+- Probability of a robot spawning at a home in a given tick
+- Probability of a robot causing a blockage when stuck in a traffic jam in a given tick
+- Width and height of the grid
+- Density of the roads on the grid
+- Density of houses on the roads
+- If stuck at a cell unable to move, how many ticks to wait until the next check (this reduces lag)
+- Probability of a blockage spawning on a given road tile in a given tick
 
-This project uses [Gradle](https://gradle.org/) to manage dependencies.
-The Gradle wrapper was included, so you can run Gradle tasks using `gradlew.bat` or `./gradlew` commands.
-Useful Gradle tasks and flags:
+# Controls
 
-- `--continue`: when using this flag, errors will not stop the tasks from running.
-- `--daemon`: thanks to this flag, Gradle daemon will be used to run chosen tasks.
-- `--offline`: when using this flag, cached dependency archives will be used.
-- `--refresh-dependencies`: this flag forces validation of all dependencies. Useful for snapshot versions.
-- `build`: builds sources and archives of every project.
-- `cleanEclipse`: removes Eclipse project data.
-- `cleanIdea`: removes IntelliJ project data.
-- `clean`: removes `build` folders, which store compiled classes and built archives.
-- `eclipse`: generates Eclipse project data.
-- `idea`: generates IntelliJ project data.
-- `lwjgl3:jar`: builds application's runnable jar, which can be found at `lwjgl3/build/libs`.
-- `lwjgl3:run`: starts the application.
-- `test`: runs unit tests (if any).
+Many speeds can be adjusted with constants at the top of files.
 
-Note that most tasks that are not specific to a single project can be run with `name:` prefix, where the `name` should be replaced with the ID of a specific project.
-For example, `core:clean` removes `build` folder only from the `core` project.
+Click a cell to mark it as permanently blocked.
+
+Hit `S` to toggle robot spawning.
+
+# More
+
+The numbers in the top left are the attempted robot spawns and the number of successful robot arrivals (at their destination). Note that the first number if _attempted_ - if a robot is spawned and in doing so causes an immediate conflict, it is despawned.
