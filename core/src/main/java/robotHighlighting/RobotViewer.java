@@ -1,6 +1,6 @@
 package robotHighlighting;
 
-import java.awt.Point;
+//import java.awt.Point;
 import java.util.List;
 
 import livegraph.ConnectedNode;
@@ -11,15 +11,14 @@ import livegraph.RobotMovement;
 
 public class RobotViewer {
     
-    private GraphNode<Integer, Integer> currentNode;
-    private RobotMovement<Integer, Integer> robot;
-    public Point robotCoordinates;
+    public GraphNode<Integer, Integer> currentNode;
+    public RobotMovement<Integer, Integer> robot;
 
     public RobotViewer() {}
 
     // gets current node and robot from the coordinates of the player click
-    public void setNewRobot(int x, int y, Graph<Integer> graph) {
-        this.currentNode = graph.getNodeByCoordinates(x, y);
+    public void setNewRobot(double x, double y, Graph<Integer> graph) {
+        this.currentNode = graph.getNodeByCoordinates((int) x, (int) y);
 
         if (currentNode.getOccupiers().size() > 0) {
             RobotMovement<Integer, Integer> closest = currentNode.getOccupiers().get(0);
@@ -42,14 +41,12 @@ public class RobotViewer {
     public boolean updateRobotLocation() {
         // check if robot still occupier
         if (currentNode.getOccupiers().contains(robot)) {
-            robotCoordinates = calcRobotCoordinates(currentNode, robot);
             return true;
         } else { // check adjacent nodes for robot
             List<ConnectedNode<Integer, Integer>> neighbours = currentNode.getNeighbours();
             for (int i = 0; i < neighbours.size(); i++) {
                 if (neighbours.get(i).node.getOccupiers().contains(robot)) {
                     currentNode = neighbours.get(i).node;
-                    robotCoordinates = calcRobotCoordinates(currentNode, robot);
                     return true;
                 } 
             }
@@ -59,11 +56,11 @@ public class RobotViewer {
 
     private Point calcRobotCoordinates(GraphNode<Integer, Integer> currentNode, RobotMovement<Integer, Integer> robotMovement) {
         // Calculate the robot's coordinates based on its movement progress
-        int x = currentNode.getX();
-        int y = currentNode.getY();
+        double x = currentNode.getX();
+        double y = currentNode.getY();
 
         // Adjust the coordinates based on the robot's movement
-        int progress = robotMovement.getRemainingProgression();
+        double progress = robotMovement.getRemainingProgression() / (double) robotMovement.getTotalEdgeWeight();
             // If the robot is moving, calculate its new position
             x = x + progress * (robotMovement.getOriginX() - x);
             y = y + progress * (robotMovement.getOriginY() - y);

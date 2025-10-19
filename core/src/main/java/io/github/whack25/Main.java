@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -21,10 +22,12 @@ import livegraph.Graph;
 import livegraph.GraphNode;
 import livegraph.NodeType;
 import livegraph.RobotMovement;
+import robotHighlighting.RobotViewer;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {
     private SpriteBatch spriteBatch;
+    private ShapeRenderer shapeRenderer;
     private Texture image;
     FitViewport viewport;
     Texture backgroundTexture;
@@ -48,11 +51,18 @@ public class Main extends ApplicationAdapter {
     private int robotsSpawned = 0;
     private int robotsHome = 0;
 
+    private boolean shiftKeyPressed = false;
+    private RobotViewer robotViewer;
+    private boolean doHighlightRobot = false; 
+
     @Override
     public void create() {
         /* Load textures, sounds here - you should not create these at constructor
         or init level as LibGDX needs to be loaded first
         */
+        robotViewer = new RobotViewer();
+        shapeRenderer = new ShapeRenderer();
+
         GraphGenerator generator = new GraphGenerator();
         for (int i = 0; i < 20; i++) { // generating the grid is rarely successful first time due to randomness, so retry a few times
             try {
@@ -105,14 +115,20 @@ public class Main extends ApplicationAdapter {
                         int gridX = (int) worldCoordinates.x;
                         int gridY = (int) worldCoordinates.y;
 
-                        System.out.println("Clicked on grid square: (" + gridX + ", " + gridY + ")");
+                        
+                        if (shiftKeyPressed) {
+                            robotViewer.setNewRobot(worldCoordinates.x, worldCoordinates.y, gameGraph);
+                            doHighlightRobot = true;
+                        } else {
 
-                        gameGraph.toggleNodeEnabled(gridX, gridY);
+                            System.out.println("Clicked on grid square: (" + gridX + ", " + gridY + ")");
+                            gameGraph.toggleNodeEnabled(gridX, gridY);
 
-                        // Play sound on click
-                        dropSound.play();
+                            // Play sound on click
+                            dropSound.play();
 
-                        return true; // event handled
+                            return true; // event handled
+                        }
                     }
                     return false; // event not handled
                 }
@@ -161,12 +177,12 @@ public class Main extends ApplicationAdapter {
             gameGraph.toggleSpawnRobots();
             System.out.println("Toggling robot spawning");
         }
+        shiftKeyPressed = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT);
 
 //        float speed = .25f;
 //        float delta = Gdx.graphics.getDeltaTime(); // time since last frame
 //
-        if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) && Gdx.input.isKeyPressed(Input.Buttons.LEFT)) {
-        }
+
 //            bucketSprite.translateX(speed * delta);
 //        } else if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
 //            bucketSprite.translateX(-speed * delta);
@@ -217,6 +233,25 @@ public class Main extends ApplicationAdapter {
                         0.5f,0.5f);
                 }
             }
+        }
+
+        // Draw highlight
+        if (doHighlightRobot) {
+            doHighlightRobot = robotViewer.updateRobotLocation();
+
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setColor(1, worldHeight, 1, 0.3f);
+
+            // draw car
+            float progress = 1.0f - ((float) robotViewer.robot.getRemainingProgression() / (float) robotViewer.robot.getTotalEdgeWeight());
+            shapeRenderer.circle(0.25f+robotViewer.currentNode.getX()*progress + robotViewer.robot.getOriginX()*(1-progress),
+                0.25f+robotViewer.currentNode.getY()*progress + robotViewer.robot.getOriginY()*(1-progress),
+                0.5f);
+
+            // draw house;
+            shapeRenderer.circle(0.25f+gameGraph.getNode(robotViewer.robot.getRobot().destinationNodeId).getX(),
+                0.25f+gameGraph.getNode(robotViewer.robot.getRobot().destinationNodeId).getY(),
+                0.5f);
         }
 
         // Draw text
