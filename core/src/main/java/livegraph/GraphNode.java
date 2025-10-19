@@ -12,6 +12,8 @@ public class GraphNode<R,N> {
     private NodeType tileType;
     private List<ConnectedNode<R, N>> neighbours; // adjacent OUTGOING nodes. this class does not store incoming edges.
     private List<RobotMovement<R, N>> occupiers;
+    private int maxOccupiers = 1;
+    private int disabledForGoes = 0; // number of ticks this node is disabled for, no robots can enter, but robots can leave
 
     public GraphNode(N nodeId, int x, int y, NodeType tileType, List<ConnectedNode<R,N>> neighbours, List<RobotMovement<R,N>> occupiers) {
         this.nodeId = nodeId;
@@ -41,9 +43,16 @@ public class GraphNode<R,N> {
                     for (ConnectedNode<R,N> neighbour : this.getNeighbours()) {
                         if (neighbour.node.nodeId.equals(nextNode.nodeId)) {
                             // Found the edge to the next node
-                            RobotMovement<R,N> newMovement = new RobotMovement<>(movement.getRobot(), neighbour.edgeWeight, this.x, this.y);
-                            nextNode.occupiers.add(newMovement);
-                            break;
+                            if (nextNode .occupiers.size() >= nextNode.getMaxOccupiers()) {
+                                // Next node is full, robot stays at this node
+                                System.out.println("Robot " + movement.getRobot().robotID + " at node " + this.nodeId + " cannot move to node " + nextNode.nodeId + " as it is full, staying put.");
+                                newOccupiers.add(movement);
+                                break;
+                            } else { // Move to next node
+                                RobotMovement<R,N> newMovement = new RobotMovement<>(movement.getRobot(), neighbour.edgeWeight, this.x, this.y);
+                                nextNode.occupiers.add(newMovement);
+                                break;
+                            }
                         }
                     }
                 } else {
