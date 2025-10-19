@@ -3,12 +3,14 @@ package io.github.whack25;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import io.github.whack25.graphGen.GraphGenerator;
@@ -72,6 +74,31 @@ public class Main extends ApplicationAdapter {
         music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
         bucketSprite = new Sprite(bucketTexture);
         bucketSprite.setSize(1,1);
+
+        // Setup touch input
+        Gdx.input.setInputProcessor(
+            new InputAdapter() {
+                @Override
+                public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+                    if (button == Input.Buttons.LEFT) {
+                        // Convert screen coordinates to world coordinates
+                        Vector3 worldCoordinates = viewport.unproject(new Vector3(screenX, screenY, 0));
+                        int gridX = (int) worldCoordinates.x;
+                        int gridY = (int) worldCoordinates.y;
+
+                        System.out.println("Clicked on grid square: (" + gridX + ", " + gridY + ")");
+
+                        gameGraph.toggleNodeEnabled(gridX, gridY);
+
+                        // Play sound on click
+                        dropSound.play();
+
+                        return true; // event handled
+                    }
+                    return false; // event not handled
+                }
+            }
+        );
     }
 
     @Override
@@ -110,6 +137,8 @@ public class Main extends ApplicationAdapter {
     }
 
     private void input() {
+        // Get if a grid square is clicked
+
 //        float speed = .25f;
 //        float delta = Gdx.graphics.getDeltaTime(); // time since last frame
 //

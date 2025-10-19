@@ -187,6 +187,14 @@ public class GraphNode<R,N> {
         this.occupiers.add(occupier);
     }
 
+    public void setBlocked(boolean blocked) {
+        if (blocked) {
+            this.disabledForGoes = Integer.MAX_VALUE; // Block indefinitely
+        } else {
+            this.disabledForGoes = 0; // Unblock
+        }
+    }
+
     // Overrides
     @Override
     public String toString() {

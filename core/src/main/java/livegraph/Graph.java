@@ -49,6 +49,16 @@ public class Graph<N> {
         nodes.put(node.getNodeId(), node);
     }
 
+    public void toggleNodeEnabled(int x, int y) {
+        for (GraphNode<Integer,N> node : nodes.values()) {
+            if (node.getX() == x && node.getY() == y) {
+                node.setBlocked(!node.isBlocked());
+                return;
+            }
+        }
+        throw new IllegalArgumentException("No node found at the given coordinates");
+    }
+
     /**
      * Adds a unidirectional edge from fromNodeId to toNodeId with the given edge weight.
      * @param fromNodeId the ID of the node the edge is from
@@ -75,7 +85,6 @@ public class Graph<N> {
         for (GraphNode<Integer,N> node : nodes.values()) {
             node.tick();
             // Randomly decide to spawn a robot at this node or at the end
-            // TODO: Make spawning based on houses when implemented
             if (Math.random() < PROBABILITY_ROBOT_SPAWN_ON_TILE && node.getTileType() == NodeType.HOUSE) {
                 if (endNodeR == null) {
                     endNodeR = node;
