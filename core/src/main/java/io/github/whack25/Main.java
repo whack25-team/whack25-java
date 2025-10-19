@@ -3,12 +3,16 @@ package io.github.whack25;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import io.github.whack25.graphGen.GraphGenerator;
@@ -28,13 +32,17 @@ public class Main extends ApplicationAdapter {
     Texture roadDownTexture;
     Texture roadRightTexture;
     Texture roadLeftTexture;
+    Texture roadBlockedTexture;
     Texture carTexture;
     Texture grassTexture;
     Sound dropSound;
     Music music;
     Sprite bucketSprite;
+    BitmapFont font;
     private Graph<Integer> gameGraph;
     private final int MAX_FRAME_RATE = 2;
+    private int robotsSpawned = 0;
+    private int robotsHome = 0;
 
     @Override
     public void create() {
@@ -44,13 +52,21 @@ public class Main extends ApplicationAdapter {
         GraphGenerator generator = new GraphGenerator();
         for (int i = 0; i < 20; i++) { // generating the grid is rarely successful first time due to randomness, so retry a few times
             try {
-                gameGraph = generator.generate(50, 50, 0.4); //Graph.exampleGraph(); // generator.generate(20, 20, 0.4);
+                gameGraph = generator.generate(30, 30, 0.35, 0.1); //Graph.exampleGraph(); // generator.generate(20, 20, 0.4, 0.2);
                 break;
             } catch (Exception e) {
                 System.err.println("Failed to generate the grid, retrying... (" + (i+1) + "/20)");
                 e.printStackTrace();
             }
         }
+
+        gameGraph.setOnRobotFinish(() -> {
+            robotsHome++;
+        });
+
+        gameGraph.setOnRobotSpawn(() -> {
+            robotsSpawned++;
+        });
 
         spriteBatch = new SpriteBatch();
         image = new Texture("libgdx.png");
@@ -64,19 +80,46 @@ public class Main extends ApplicationAdapter {
         roadDownTexture = new Texture("roadDown.png");
         roadRightTexture = new Texture("roadRight.png");
         roadLeftTexture = new Texture("roadLeft.png");
+        roadBlockedTexture = new Texture("roadBlocked.png");
         grassTexture = new Texture("Grass.png");
         carTexture = new Texture("car.png");
         dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.mp3"));
         music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
         bucketSprite = new Sprite(bucketTexture);
         bucketSprite.setSize(1,1);
+        font = new BitmapFont(); // default font
+        font.getData().setScale(0.125001f);
+        // Setup touch input
+        Gdx.input.setInputProcessor(
+            new InputAdapter() {
+                @Override
+                public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+                    if (button == Input.Buttons.LEFT) {
+                        // Convert screen coordinates to world coordinates
+                        Vector3 worldCoordinates = viewport.unproject(new Vector3(screenX, screenY, 0));
+                        int gridX = (int) worldCoordinates.x;
+                        int gridY = (int) worldCoordinates.y;
+
+                        System.out.println("Clicked on grid square: (" + gridX + ", " + gridY + ")");
+
+                        gameGraph.toggleNodeEnabled(gridX, gridY);
+
+                        // Play sound on click
+                        dropSound.play();
+
+                        return true; // event handled
+                    }
+                    return false; // event not handled
+                }
+            }
+        );
     }
 
     @Override
     public void render() {
         logic();
         // waitBeforeFrame();
-        // input();
+        input();
         draw();
 //        ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
 //        batch.begin();
@@ -108,6 +151,12 @@ public class Main extends ApplicationAdapter {
     }
 
     private void input() {
+        // Toggle robot spawning when "S" is tapped
+        if (Gdx.input.isKeyJustPressed(Input.Keys.S)) {
+            gameGraph.toggleSpawnRobots();
+            System.out.println("Toggling robot spawning");
+        }
+
 //        float speed = .25f;
 //        float delta = Gdx.graphics.getDeltaTime(); // time since last frame
 //
@@ -125,6 +174,9 @@ public class Main extends ApplicationAdapter {
     private void draw() {
         System.out.println(System.currentTimeMillis()+": drawing new frame at time");
 
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
         ScreenUtils.clear(Color.BLACK);
         viewport.apply();
         spriteBatch.setProjectionMatrix(viewport.getCamera().combined);
@@ -141,6 +193,7 @@ public class Main extends ApplicationAdapter {
         // Add background textures
         for (GraphNode<Integer, Integer> node : gameGraph.getNodes().values()) {
             spriteBatch.draw(node.getTileType() == NodeType.HOUSE ? houseTexture :
+                             node.isBlocked() ? roadBlockedTexture :
                              node.getTileType() == NodeType.ROAD ? roadTexture :
                              grassTexture,
                 node.getX(), node.getY(), 1,1);
@@ -159,6 +212,9 @@ public class Main extends ApplicationAdapter {
                 }
             }
         }
+
+        // Draw text
+        font.draw(spriteBatch, robotsSpawned+"; "+robotsHome, 1, worldHeight - 1);
 
 //        bucketSprite.draw(spriteBatch);
 
@@ -194,6 +250,7 @@ public class Main extends ApplicationAdapter {
     @Override
     public void dispose() {
         spriteBatch.dispose();
+        font.dispose();
         image.dispose();
     }
 }

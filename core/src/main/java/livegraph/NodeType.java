@@ -3,5 +3,7 @@ package livegraph;
 public enum NodeType {
     ROAD,
     HOUSE,
-    BLANK
+    BLANK,
+    TRACK,
+    CROSSING
 }
