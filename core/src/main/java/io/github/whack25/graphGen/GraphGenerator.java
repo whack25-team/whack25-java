@@ -10,6 +10,8 @@ public class GraphGenerator {
 
     final int EDGE_STRAIGHT = 15;
     final int EDGE_UTURN = 25;
+
+    final int MAX_COVERAGE_ITERATIONS = 1024;
     /**
      * Generates a graph with the specified dimensions and coverage goal, creates houses on it, and displays it.
      * @param width Width of the graph
@@ -99,7 +101,12 @@ public class GraphGenerator {
             int direction = (int)(Math.random() * 4); // holds last direction. north = 0, east = 1, south = 2, west = 3
             int pathLength = 0;
 
+            int iterations = 0;
+
             while (coverage / (double)(width * height) < coverageGoal) { // while not maxed out coverage
+                if (MAX_COVERAGE_ITERATIONS < iterations++) {
+                    break;
+                }
 
                 int length = (int)(Math.random() * 5) + 2; // random length between 2 and 6
 
@@ -166,7 +173,7 @@ public class GraphGenerator {
 
                             int paths = 0;
                             switch (newDirection) { // stop adding paths if there is a path to the side of the next one, avoids 2+ thick line of junctions
-                                case 0: 
+                                case 0:
                                     if (xInc < width - 1 && graph[xInc+1][yInc] > 0) paths++;
                                     if (xInc > 0 && graph[xInc-1][yInc] > 0) paths++;
                                     break;
@@ -279,7 +286,7 @@ public class GraphGenerator {
             }
         }
 
-        // add edges for all nodes 
+        // add edges for all nodes
         // done in sets of 2x2 cells as per graph node
 
         for (int i = 0; i < width; i++) {
@@ -447,7 +454,7 @@ public class GraphGenerator {
             System.out.println();
         }
     }
-    
+
     public void displayPreGraph(int[][] table) {
         for (int i = 0; i < table.length; i++) {
             for (int j = 0; j < table[i].length; j++) {
@@ -466,7 +473,7 @@ public class GraphGenerator {
             for (int j = 0; j < graphData.getNodeTable()[i].length; j++) {
                 if (graphData.getNodeTable()[i][j] == 0) {
                     if (Math.random() < probability) {
-                        
+
                         ArrayList<Integer> directions = new ArrayList<Integer>();
                         if (i > 0 && graphData.getNodeTable()[i-1][j] > 0 && graphData.graph.getNode(graphData.getNodeTable()[i-1][j]).getTileType() == NodeType.ROAD) {
                             directions.add(3); // west
@@ -484,24 +491,24 @@ public class GraphGenerator {
                             // create house facing direction
                             graphData.nodeTable[i][j] = GenerateId(i, j, graphData.getNodeTable().length);
                             graphData.graph.addNode( new GraphNode<>(graphData.nodeTable[i][j], i, j, NodeType.HOUSE, new ArrayList<>(), new ArrayList<>()));
-                            
+
                             int a = i;
                             int b = j;
 
                             switch (direction) {
-                                case 0: 
+                                case 0:
                                     b -= 1; // north
                                     break;
-                                case 1: 
+                                case 1:
                                     a += 1; // east
                                     break;
-                                case 2: 
+                                case 2:
                                     b += 1; // south
                                     break;
-                                case 3: 
+                                case 3:
                                     a -= 1; // west
                                     break;
-                                default: 
+                                default:
                                     b = 0;
                                     break;
                             }
