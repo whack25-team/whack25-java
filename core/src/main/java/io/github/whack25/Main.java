@@ -102,8 +102,7 @@ public class Main extends ApplicationAdapter {
         bucketSprite = new Sprite(bucketTexture);
         bucketSprite.setSize(1,1);
         font = new BitmapFont(); // default font
-        font.getData().setScale(0.125f);
-
+        font.getData().setScale(0.125001f);
         // Setup touch input
         Gdx.input.setInputProcessor(
             new InputAdapter() {

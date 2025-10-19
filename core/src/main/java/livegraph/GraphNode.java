@@ -19,6 +19,7 @@ public class GraphNode<R,N> {
     private int CELL_STUCK_BLOCK_MAX_TICKS = 100; // Max ticks to block when stuck in congestion
     private int waitToMove = 0; // Goes to wait before moving due to congestion / no available path
     private Runnable onRobotFinish = () -> {};
+    private int queueTime = 0; // the queue time spent at this node
 
     public GraphNode(N nodeId, int x, int y, NodeType tileType, List<ConnectedNode<R,N>> neighbours, List<RobotMovement<R,N>> occupiers, Runnable onRobotFinish) {
         this.nodeId = nodeId;
@@ -51,6 +52,8 @@ public class GraphNode<R,N> {
             return; // Do not process robot movements this tick
         }
 
+        if (queueTime > 0) queueTime --; // decrement queueTime. If we're queueing, we'll increment it by 2 to counteract this
+
         List<RobotMovement<R,N>> newOccupiers = new ArrayList<>(); // the occupiers at this node after this tick, during which some robots may leave
         for (RobotMovement<R, N> movement : occupiers) {
             if (movement.readyToMoveNodes() && movement.getRobot().destinationNodeId.equals(this.nodeId)) {
@@ -75,6 +78,7 @@ public class GraphNode<R,N> {
                                     this.disabledForGoes = (int) (Math.random() * CELL_STUCK_BLOCK_MAX_TICKS); // Block this node for 1-10 ticks due to congestion
                                     System.out.println("Node " + this.nodeId + " is now blocked for " + this.disabledForGoes + " ticks due to congestion.");
                                 }
+                                queueTime+=2;
                                 break;
                             } else { // Move to next node
                                 RobotMovement<R,N> newMovement = new RobotMovement<>(movement.getRobot(), neighbour.edgeWeight, this.x, this.y);
@@ -88,6 +92,7 @@ public class GraphNode<R,N> {
                     System.out.println("Robot "+movement.getRobot().robotID+" at node "+this.nodeId+" has no path to destination "+movement.getRobot().destinationNodeId+", staying put.");
                     if (tileType != NodeType.HOUSE) { // Delete if spawn-trapped (may be an error in graph generation)
                         newOccupiers.add(movement);
+                        queueTime += 2;
                         waitToMove = (int) (Math.random()*20);
                     }
                 }
@@ -134,7 +139,7 @@ public class GraphNode<R,N> {
 
                 if (!visitedNodeIds.contains(neighbour.getNode().getNodeId()) && !neighbour.getNode().isBlocked()) { // Avoid cycles && currentPath.path.stream().noneMatch(node -> node.nodeId.equals(neighbour.node.nodeId))
                     // System.out.println("Exploring neighbour "+neighbour.node.nodeId+" from current node "+currentNode.nodeId);
-                    PathNode<R,N> newPath = currentPath.addStep(neighbour.node, neighbour.edgeWeight + (neighbour.node.getOccupiers().size() * 10)); // add extra weight for occupiers to avoid congestion
+                    PathNode<R,N> newPath = currentPath.addStep(neighbour.node, neighbour.edgeWeight + (neighbour.node.getOccupiers().size() * 10) + neighbour.node.getQueueTime()); // add extra weight for occupiers to avoid congestion
                     pathsToExplore.add(newPath);
                 }
             }
@@ -175,6 +180,10 @@ public class GraphNode<R,N> {
 
     public boolean isBlocked() {
         return this.disabledForGoes > 0;
+    }
+
+    public int getQueueTime() {
+        return queueTime;
     }
 
     // Setters
