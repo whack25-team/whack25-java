@@ -3,8 +3,8 @@ package io.github.whack25.graphGen;
 public class GraphGeneratorTester {
     public void Test() {
         GraphGenerator generator = new GraphGenerator();
-        generator.generate(20, 25, 0.4, 0.2);
-        //generator.displayPreGraph(generator.GeneratePublicTransport(20, 20));
+        generator.generate(20, 25, 0.4, 0.1);
+
         /*for (int i = 0; i < 20; i++) {
             for (int j = 0; j < 25; j++) {
                 System.out.print((graph[i][j] == 0 ? " " : graph[i][j]) + " ");

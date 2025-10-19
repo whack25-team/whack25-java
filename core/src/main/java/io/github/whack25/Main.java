@@ -7,7 +7,9 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector3;
@@ -40,8 +42,11 @@ public class Main extends ApplicationAdapter {
     Sound dropSound;
     Music music;
     Sprite bucketSprite;
+    BitmapFont font;
     private Graph<Integer> gameGraph;
     private final int MAX_FRAME_RATE = 2;
+    private int robotsSpawned = 0;
+    private int robotsHome = 0;
 
     @Override
     public void create() {
@@ -51,13 +56,21 @@ public class Main extends ApplicationAdapter {
         GraphGenerator generator = new GraphGenerator();
         for (int i = 0; i < 20; i++) { // generating the grid is rarely successful first time due to randomness, so retry a few times
             try {
-                gameGraph = generator.generate(30, 30, 0.2, 0.1); //Graph.exampleGraph(); // generator.generate(20, 20, 0.4, 0.2);
+                gameGraph = generator.generate(30, 30, 0.35, 0.1); //Graph.exampleGraph(); // generator.generate(20, 20, 0.4, 0.2);
                 break;
             } catch (Exception e) {
                 System.err.println("Failed to generate the grid, retrying... (" + (i+1) + "/20)");
                 e.printStackTrace();
             }
         }
+
+        gameGraph.setOnRobotFinish(() -> {
+            robotsHome++;
+        });
+
+        gameGraph.setOnRobotSpawn(() -> {
+            robotsSpawned++;
+        });
 
         spriteBatch = new SpriteBatch();
         image = new Texture("libgdx.png");
@@ -78,6 +91,8 @@ public class Main extends ApplicationAdapter {
         music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
         bucketSprite = new Sprite(bucketTexture);
         bucketSprite.setSize(1,1);
+        font = new BitmapFont(); // default font
+        font.getData().setScale(0.125f);
 
         // Setup touch input
         Gdx.input.setInputProcessor(
@@ -109,7 +124,7 @@ public class Main extends ApplicationAdapter {
     public void render() {
         logic();
         // waitBeforeFrame();
-        // input();
+        input();
         draw();
 //        ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
 //        batch.begin();
@@ -141,7 +156,11 @@ public class Main extends ApplicationAdapter {
     }
 
     private void input() {
-        // Get if a grid square is clicked
+        // Toggle robot spawning when "S" is tapped
+        if (Gdx.input.isKeyJustPressed(Input.Keys.S)) {
+            gameGraph.toggleSpawnRobots();
+            System.out.println("Toggling robot spawning");
+        }
 
 //        float speed = .25f;
 //        float delta = Gdx.graphics.getDeltaTime(); // time since last frame
@@ -160,6 +179,9 @@ public class Main extends ApplicationAdapter {
 
     private void draw() {
         System.out.println(System.currentTimeMillis()+": drawing new frame at time");
+
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         ScreenUtils.clear(Color.BLACK);
         viewport.apply();
@@ -197,6 +219,9 @@ public class Main extends ApplicationAdapter {
             }
         }
 
+        // Draw text
+        font.draw(spriteBatch, robotsSpawned+"; "+robotsHome, 1, worldHeight - 1);
+
 //        bucketSprite.draw(spriteBatch);
 
         spriteBatch.end();
@@ -231,6 +256,7 @@ public class Main extends ApplicationAdapter {
     @Override
     public void dispose() {
         spriteBatch.dispose();
+        font.dispose();
         image.dispose();
     }
 }

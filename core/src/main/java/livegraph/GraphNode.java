@@ -14,18 +14,20 @@ public class GraphNode<R,N> {
     private List<RobotMovement<R, N>> occupiers;
     private int maxOccupiers = 1;
     private int disabledForGoes = 0; // number of ticks this node is disabled for, no robots can enter, but robots can leave
-    private double CELL_BLOCK_PROBABILITY_QUEUE = 0.02; // Probability of blocking a cell during a queue
+    private double CELL_BLOCK_PROBABILITY_QUEUE = 0.002; // Probability of blocking a cell during a queue
     private double CELL_RANDOMLY_BLOCK_PROBABILITY = 0.000005; // Probability of randomly blocking this cell each tick
-    private int CELL_STUCK_BLOCK_MAX_TICKS = 200; // Max ticks to block when stuck in congestion
+    private int CELL_STUCK_BLOCK_MAX_TICKS = 100; // Max ticks to block when stuck in congestion
     private int waitToMove = 0; // Goes to wait before moving due to congestion / no available path
+    private Runnable onRobotFinish = () -> {};
 
-    public GraphNode(N nodeId, int x, int y, NodeType tileType, List<ConnectedNode<R,N>> neighbours, List<RobotMovement<R,N>> occupiers) {
+    public GraphNode(N nodeId, int x, int y, NodeType tileType, List<ConnectedNode<R,N>> neighbours, List<RobotMovement<R,N>> occupiers, Runnable onRobotFinish) {
         this.nodeId = nodeId;
         this.x = x;
         this.y = y;
         this.tileType = tileType;
         this.neighbours = neighbours;
         this.occupiers = occupiers;
+        this.onRobotFinish = onRobotFinish;
     }
 
     /**
@@ -54,6 +56,7 @@ public class GraphNode<R,N> {
             if (movement.readyToMoveNodes() && movement.getRobot().destinationNodeId.equals(this.nodeId)) {
                 // Robot has reached its destination, so it leaves the graph
                 System.out.println("Robot "+movement.getRobot().robotID+" has reached its destination at node "+this.nodeId);
+                onRobotFinish.run();
                 continue; // Do not add to newOccupiers
             }
             else if (movement.readyToMoveNodes()) {
@@ -131,7 +134,7 @@ public class GraphNode<R,N> {
 
                 if (!visitedNodeIds.contains(neighbour.getNode().getNodeId()) && !neighbour.getNode().isBlocked()) { // Avoid cycles && currentPath.path.stream().noneMatch(node -> node.nodeId.equals(neighbour.node.nodeId))
                     // System.out.println("Exploring neighbour "+neighbour.node.nodeId+" from current node "+currentNode.nodeId);
-                    PathNode<R,N> newPath = currentPath.addStep(neighbour.node, neighbour.edgeWeight);
+                    PathNode<R,N> newPath = currentPath.addStep(neighbour.node, neighbour.edgeWeight + (neighbour.node.getOccupiers().size() * 10)); // add extra weight for occupiers to avoid congestion
                     pathsToExplore.add(newPath);
                 }
             }
@@ -193,6 +196,10 @@ public class GraphNode<R,N> {
         } else {
             this.disabledForGoes = 0; // Unblock
         }
+    }
+
+    public void setOnRobotFinish(Runnable onRobotFinish) {
+        this.onRobotFinish = onRobotFinish;
     }
 
     // Overrides
