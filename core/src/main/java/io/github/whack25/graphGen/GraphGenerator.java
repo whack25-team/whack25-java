@@ -10,6 +10,8 @@ public class GraphGenerator {
 
     final int EDGE_STRAIGHT = 15;
     final int EDGE_UTURN = 25;
+
+    final int MAX_COVERAGE_ITERATIONS = 1024;
     /**
      * Generates a graph with the specified dimensions and coverage goal, creates houses on it, and displays it.
      * @param width Width of the graph
@@ -88,7 +90,6 @@ public class GraphGenerator {
 
         // generate paths until coverage goal is met
         while (coverage / (double)(width * height) < coverageGoal) {
-
             if (graph[x][y] == 0) { // if not path
                 graph[x][y] = 1; // mark as path
                 coverage++;
@@ -97,8 +98,12 @@ public class GraphGenerator {
             int direction = (int)(Math.random() * 4); // holds last direction. north = 0, east = 1, south = 2, west = 3
             int pathLength = 0;
 
-            while (coverage / (double)(width * height) < coverageGoal) { // while not maxed out coverage
+            int iterations = 0;
 
+            while (coverage / (double)(width * height) < coverageGoal) { // while not maxed out coverage
+                if (iterations++ > MAX_COVERAGE_ITERATIONS) {
+                    break;
+                }
                 int length = (int)(Math.random() * 5) + 2; // random length between 2 and 6
 
                 int newDirection = ((direction + (int)(Math.random() * 3) - 1) + 4) % 4; // random direction -1 betwen 1
