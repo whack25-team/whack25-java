@@ -18,14 +18,16 @@ public class GraphNode<R,N> {
     private double CELL_RANDOMLY_BLOCK_PROBABILITY = 0.000005; // Probability of randomly blocking this cell each tick
     private int CELL_STUCK_BLOCK_MAX_TICKS = 200; // Max ticks to block when stuck in congestion
     private int waitToMove = 0; // Goes to wait before moving due to congestion / no available path
+    private Runnable onRobotFinish = () -> {};
 
-    public GraphNode(N nodeId, int x, int y, NodeType tileType, List<ConnectedNode<R,N>> neighbours, List<RobotMovement<R,N>> occupiers) {
+    public GraphNode(N nodeId, int x, int y, NodeType tileType, List<ConnectedNode<R,N>> neighbours, List<RobotMovement<R,N>> occupiers, Runnable onRobotFinish) {
         this.nodeId = nodeId;
         this.x = x;
         this.y = y;
         this.tileType = tileType;
         this.neighbours = neighbours;
         this.occupiers = occupiers;
+        this.onRobotFinish = onRobotFinish;
     }
 
     /**
@@ -54,6 +56,7 @@ public class GraphNode<R,N> {
             if (movement.readyToMoveNodes() && movement.getRobot().destinationNodeId.equals(this.nodeId)) {
                 // Robot has reached its destination, so it leaves the graph
                 System.out.println("Robot "+movement.getRobot().robotID+" has reached its destination at node "+this.nodeId);
+                onRobotFinish.run();
                 continue; // Do not add to newOccupiers
             }
             else if (movement.readyToMoveNodes()) {
@@ -193,6 +196,10 @@ public class GraphNode<R,N> {
         } else {
             this.disabledForGoes = 0; // Unblock
         }
+    }
+
+    public void setOnRobotFinish(Runnable onRobotFinish) {
+        this.onRobotFinish = onRobotFinish;
     }
 
     // Overrides
