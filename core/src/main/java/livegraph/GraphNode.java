@@ -37,18 +37,18 @@ public class GraphNode<R,N> {
     public void tick() {
         if (this.disabledForGoes > 0) {
             this.disabledForGoes--;
-            System.out.println("Node "+this.nodeId+" is disabled for "+this.disabledForGoes+" more ticks, no robots can enter.");
+            //System.out.println("Node "+this.nodeId+" is disabled for "+this.disabledForGoes+" more ticks, no robots can enter.");
         }
 
         // Randomly block this cell occasionally
         if (tileType == NodeType.ROAD && !isBlocked() && Math.random() < CELL_RANDOMLY_BLOCK_PROBABILITY) {
             this.disabledForGoes = (int) (Math.random() * 1000); // Block this node for 1-5000 ticks randomly
-            System.out.println("Node " + this.nodeId + " is now randomly blocked for " + this.disabledForGoes + " ticks.");
+            //System.out.println("Node " + this.nodeId + " is now randomly blocked for " + this.disabledForGoes + " ticks.");
         }
 
         if (waitToMove > 0) {
             waitToMove--;
-            System.out.println("Node "+this.nodeId+" is waiting to move for "+waitToMove+" more ticks due to congestion.");
+            //System.out.println("Node "+this.nodeId+" is waiting to move for "+waitToMove+" more ticks due to congestion.");
             return; // Do not process robot movements this tick
         }
 
@@ -58,7 +58,7 @@ public class GraphNode<R,N> {
         for (RobotMovement<R, N> movement : occupiers) {
             if (movement.readyToMoveNodes() && movement.getRobot().destinationNodeId.equals(this.nodeId)) {
                 // Robot has reached its destination, so it leaves the graph
-                System.out.println("Robot "+movement.getRobot().robotID+" has reached its destination at node "+this.nodeId);
+                //System.out.println("Robot "+movement.getRobot().robotID+" has reached its destination at node "+this.nodeId);
                 onRobotFinish.run();
                 continue; // Do not add to newOccupiers
             }
@@ -72,11 +72,11 @@ public class GraphNode<R,N> {
                             // Found the edge to the next node
                             if (nextNode.occupiers.size() >= nextNode.getMaxOccupiers() || nextNode.isBlocked()) {
                                 // Next node is full, robot stays at this node
-                                System.out.println("Robot " + movement.getRobot().robotID + " at node " + this.nodeId + " cannot move to node " + nextNode.nodeId + " as it is full, staying put.");
+                                //System.out.println("Robot " + movement.getRobot().robotID + " at node " + this.nodeId + " cannot move to node " + nextNode.nodeId + " as it is full, staying put.");
                                 newOccupiers.add(movement);
                                 if (Math.random() < CELL_BLOCK_PROBABILITY_QUEUE) { // DISABLE <--- disable this if you want to demo traffic jams
                                     this.disabledForGoes = (int) (Math.random() * CELL_STUCK_BLOCK_MAX_TICKS); // Block this node for 1-10 ticks due to congestion
-                                    System.out.println("Node " + this.nodeId + " is now blocked for " + this.disabledForGoes + " ticks due to congestion.");
+                                    //System.out.println("Node " + this.nodeId + " is now blocked for " + this.disabledForGoes + " ticks due to congestion.");
                                 }
                                 queueTime+=2;
                                 break;
@@ -89,7 +89,7 @@ public class GraphNode<R,N> {
                     }
                 } else {
                     // No path found, robot stays at this node
-                    System.out.println("Robot "+movement.getRobot().robotID+" at node "+this.nodeId+" has no path to destination "+movement.getRobot().destinationNodeId+", staying put.");
+                    //System.out.println("Robot "+movement.getRobot().robotID+" at node "+this.nodeId+" has no path to destination "+movement.getRobot().destinationNodeId+", staying put.");
                     if (tileType != NodeType.HOUSE) { // Delete if spawn-trapped (may be an error in graph generation)
                         newOccupiers.add(movement);
                         queueTime += 2;

@@ -68,6 +68,21 @@ public class Graph<N> {
         nodes.put(node.getNodeId(), node);
     }
 
+    /**
+     * Gets a node by its coordinates.
+     * @param x
+     * @param y
+     * @return
+     */
+    public GraphNode<Integer,N> getNodeByCoordinates(int x, int y) {
+        for (GraphNode<Integer,N> node : nodes.values()) {
+            if (node.getX() == x && node.getY() == y) {
+                return node;
+            }
+        }
+        return null;
+    }
+
     public void toggleSpawnRobots() {
         spawnRobots = !spawnRobots;
     }
@@ -114,7 +129,7 @@ public class Graph<N> {
                 } else { // end node determined from before, use the current node as the start node
                     Robot<Integer,N> robot = new Robot<>(robotCounter++, endNodeR.getNodeId());
                     node.addOccupier(new RobotMovement<>(robot, 1, node.getX(), node.getY()));
-                    System.out.println("Spawned new robot "+robot.robotID+" at node "+node.getNodeId()+" with destination "+endNodeR.getNodeId());
+                    //System.out.println("Spawned new robot "+robot.robotID+" at node "+node.getNodeId()+" with destination "+endNodeR.getNodeId());
                     endNodeR = null; // reset for next spawn
                     onRobotSpawn.run();
                 }
