@@ -5,7 +5,7 @@ import livegraph.Graph;
 public class GraphGeneratorTester {
     public void Test() {
         GraphGenerator generator = new GraphGenerator();
-        Graph<Integer> graph = generator.generate(20, 25, 0.45, 0.2);
+        Graph<Integer> graph = generator.generate(20, 25, 0.6, 0.2);
 
         /*for (int i = 0; i < 20; i++) {
             for (int j = 0; j < 25; j++) {
