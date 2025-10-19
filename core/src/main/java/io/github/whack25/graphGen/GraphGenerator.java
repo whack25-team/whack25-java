@@ -9,7 +9,7 @@ import livegraph.NodeType;
 public class GraphGenerator {
 
     final int EDGE_STRAIGHT = 15;
-    final int EDGE_UTURN= 25;
+    final int EDGE_UTURN = 25;
     /**
      * Generates a graph with the specified dimensions and coverage goal, creates houses on it, and displays it.
      * @param width Width of the graph
@@ -18,30 +18,73 @@ public class GraphGenerator {
      * @return Generated graph
      */
     public Graph<Integer> generate(int width, int height, double coverageGoal, double probability) {
-        GraphData graphData = convertGraphToCellGraph(generateGraph(width, height, coverageGoal));
+        GraphData graphData = convertGraphToCellGraph(generateGraph(generatePublicTransport(width, height), coverageGoal));
         createHousesOnGraph(graphData, probability);
-        //displayGraph(graphData, 0, 0);
+        displayGraph(graphData, 0, 0);
         return graphData.graph;
+    }
+
+    public int[][] generatePublicTransport(int width, int height) {
+        int[][] graph = new int[width][height];
+
+        // generate random start point
+        int x1 =(int)(Math.random() * width);
+        int y1 = (int)(Math.random() * height);
+
+        int x2 = (int)(Math.random() * width);
+        int y2 = (int)(Math.random() * height);
+
+        while ((x1 * x1 + y1 * y1)  - (x2 * x2 + y2 * y2) < ((width + height) / 3) * ((width + height) / 3)) { // ensure points are far enough apart
+            x1 =(int)(Math.random() * width);
+            y1 = (int)(Math.random() * height);
+            x2 = (int)(Math.random() * width);
+            y2 = (int)(Math.random() * height);
+        }
+
+        // draw line between the points
+        int dx = x2 - x1;
+        int dy = y2 - y1;
+        int nx = Math.abs(dx);
+        int ny = Math.abs(dy);
+        int signX = dx > 0 ? 1 : -1;
+        int signY = dy > 0 ? 1 : -1;
+
+        int px = x1, py = y1;
+
+        for (int ix = 0, iy = 0; ix < nx || iy < ny; ) {
+            if ((0.5 + ix) / nx < (0.5 + iy) / ny) {
+                // next step is horizontal
+                px += signX;
+                ix++;
+            } else {
+                // next step is vertical
+                py += signY;
+                iy++;
+            }
+            if (px >= 0 && px < width && py >= 0 && py < height) {
+                graph[px][py] = 3; // mark as public transport route
+            }
+        }
+        return graph;
     }
 
     /**
      * Generates a graph with the specified dimensions and coverage goal.
      * Nodes generated are 2 thick so the graph cell-width is double the size of the input dimensions.
-     * @param width Width of the graph
-     * @param height Height of the graph
      * @param coverageGoal Desired coverage as a fraction (0.0 to 1.0)
      */
-    public int[][] generateGraph(int width, int height, double coverageGoal) {
+    public int[][] generateGraph(int[][] graph, double coverageGoal) {
 
-        int[][] graph = new int[width][height];
+        int width = graph.length;
+        int height = graph[0].length;
 
         int coverage = 0; // number of covered cells
 
 
 
         // generate random start point
-        int x = (int)(Math.random() * width);
-        int y = (int)(Math.random() * height);
+        int x = width / 2;  //(int)(Math.random() * width);
+        int y = height / 2;//(int)(Math.random() * height);
 
         // generate paths until coverage goal is met
         while (coverage / (double)(width * height) < coverageGoal) {
@@ -122,20 +165,20 @@ public class GraphGenerator {
                             int paths = 0;
                             switch (newDirection) { // stop adding paths if there is a path to the side of the next one, avoids 2+ thick line of junctions
                                 case 0:
-                                    if (xInc < width - 1 && graph[xInc+1][yInc] == 1) paths++;
-                                    if (xInc > 0 && graph[xInc-1][yInc] == 1) paths++;
+                                    if (xInc < width - 1 && graph[xInc+1][yInc] > 0) paths++;
+                                    if (xInc > 0 && graph[xInc-1][yInc] > 0) paths++;
                                     break;
                                 case 1:
-                                    if (yInc < height - 1 && graph[xInc][yInc+1] == 1) paths++;
-                                    if (yInc > 0 && graph[xInc][yInc-1] == 1) paths++;
+                                    if (yInc < height - 1 && graph[xInc][yInc+1] > 0) paths++;
+                                    if (yInc > 0 && graph[xInc][yInc-1] > 0) paths++;
                                     break;
                                 case 2:
-                                    if (xInc < width - 1 && graph[xInc+1][yInc] == 1) paths++;
-                                    if (xInc > 0 && graph[xInc-1][yInc] == 1) paths++;
+                                    if (xInc < width - 1 && graph[xInc+1][yInc] > 0) paths++;
+                                    if (xInc > 0 && graph[xInc-1][yInc] > 0) paths++;
                                     break;
                                 case 3:
-                                    if (yInc < height - 1 && graph[xInc][yInc+1] == 1) paths++;
-                                    if (yInc > 0 && graph[xInc][yInc-1] == 1) paths++;
+                                    if (yInc < height - 1 && graph[xInc][yInc+1] > 0) paths++;
+                                    if (yInc > 0 && graph[xInc][yInc-1] > 0) paths++;
                                     break;
                                 default:
                                     break;
@@ -151,7 +194,7 @@ public class GraphGenerator {
                 }
 
                 // try end whole path randomly
-                pathLength += i;
+                pathLength += i - 1;
                 if ((Math.random() * pathLength) >= 15) {
                     break;
                 }
@@ -191,7 +234,7 @@ public class GraphGenerator {
                     if (j > 0 && graph[i][j-1] > 0) paths++;
 
                     if (paths >= 3) {
-                        graph[i][j] = 2; // mark as junction
+                        graph[i][j] += 1; // mark as junction
                     }
                 }
             }
@@ -220,15 +263,16 @@ public class GraphGenerator {
         // generate nodes for all corridors and junctions
         for (int i = 0; i < table.length; i++) {
             for (int j = 0; j < table[i].length; j++) {
+                NodeType type = table[i][j] > 2 ? NodeType.TRACK : NodeType.ROAD;
                 if (table[i][j] > 0) {
                     nodeTable[i*2][j*2] = GenerateId(2 * i, 2 * j, width * 2);
-                    graph.addNode(new GraphNode<>(nodeTable[i*2][j*2], 2 * i, 2 * j, NodeType.ROAD, new ArrayList<>(), new ArrayList<>(), () -> {}) );
+                    graph.addNode(new GraphNode<>(nodeTable[i*2][j*2], 2 * i, 2 * j, type, new ArrayList<>(), new ArrayList<>(), () -> {}));
                     nodeTable[i*2 + 1][j*2] = GenerateId(2 * i + 1, 2 * j, width * 2);
-                    graph.addNode(new GraphNode<>(nodeTable[i*2 + 1][j*2], 2 * i + 1, 2 * j, NodeType.ROAD, new ArrayList<>(), new ArrayList<>(), () -> {}));
+                    graph.addNode(new GraphNode<>(nodeTable[i*2 + 1][j*2], 2 * i + 1, 2 * j, type, new ArrayList<>(), new ArrayList<>(), () -> {}));
                     nodeTable[i*2][j*2 + 1] = GenerateId(2 * i, 2 * j + 1, width * 2);
-                    graph.addNode(new GraphNode<>(nodeTable[i*2][j*2 + 1], 2 * i, 2 * j + 1, NodeType.ROAD, new ArrayList<>(), new ArrayList<>(), () -> {}));
+                    graph.addNode(new GraphNode<>(nodeTable[i*2][j*2 + 1], 2 * i, 2 * j + 1, type, new ArrayList<>(), new ArrayList<>(), () -> {}));
                     nodeTable[i*2 + 1][j*2 + 1] = GenerateId(2 * i + 1, 2 * j + 1, width * 2);
-                    graph.addNode(new GraphNode<>(nodeTable[i*2 + 1][j*2 + 1], 2 * i + 1, 2 * j + 1, NodeType.ROAD, new ArrayList<>(), new ArrayList<>(), () -> {}));
+                    graph.addNode(new GraphNode<>(nodeTable[i*2 + 1][j*2 + 1], 2 * i + 1, 2 * j + 1, type, new ArrayList<>(), new ArrayList<>(), () -> {}));
                 }
             }
         }
@@ -392,9 +436,20 @@ public class GraphGenerator {
                     System.out.print("  ");
                 } else if (graph.graph.getNode(graph.nodeTable[i][j]).getTileType() == NodeType.HOUSE) {
                     System.out.print("H ");
+                } else if (graph.graph.getNode(graph.nodeTable[i][j]).getTileType() == NodeType.TRACK) {
+                    System.out.print("T ");
                 } else {
                     System.out.print("- ");
                 }
+            }
+            System.out.println();
+        }
+    }
+
+    public void displayPreGraph(int[][] table) {
+        for (int i = 0; i < table.length; i++) {
+            for (int j = 0; j < table[i].length; j++) {
+                System.out.print((table[i][j] == 0 ? " " : table[i][j]) + " ");
             }
             System.out.println();
         }
@@ -458,6 +513,9 @@ public class GraphGenerator {
             }
         }
     }
+
+
+
 
     public class GraphData {
         public Graph<Integer> graph;
