@@ -30,6 +30,15 @@ public class Graph<N> {
     }
 
     /**
+     * Gets a node from the graph.
+     * @param node the ID of the node to get
+     * @return the node, or null if not found
+     */
+    public GraphNode<R,N> getNode(N node) {
+        return nodes.get(node);
+    }
+
+    /**
      * Adds a node to the graph.
      * @param node the node to add
      */
