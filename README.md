@@ -40,3 +40,11 @@ Hit `S` to toggle robot spawning.
 # More
 
 The numbers in the top left are the attempted robot spawns and the number of successful robot arrivals (at their destination). Note that the first number if _attempted_ - if a robot is spawned and in doing so causes an immediate conflict, it is despawned.
+
+# Generation
+ - starts with a grid
+ - draws lines  on the grid to form a connected graph until coverage quota met
+    - done by starting new lines from existing paths, always gap between lines except for junctions
+ - forms junctions on the grid
+ - splits each current cell into a 2x2, needed for  2-way street set up, then applies edges between them
+ - spawns houses randomly based on a probability on each valid space
