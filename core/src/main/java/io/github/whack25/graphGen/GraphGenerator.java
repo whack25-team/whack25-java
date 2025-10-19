@@ -281,7 +281,7 @@ public class GraphGenerator {
                         graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_STRAIGHT);
                         graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_STRAIGHT);
                         graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_STRAIGHT);
-                        graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x+1][y], EDGE_STRAIGHT);
+                        graph.addUnidirectionalEdge(nodeTable[x][y+1], nodeTable[x][y], EDGE_STRAIGHT);
                         if (directions[2] == 1) { // if south path solid
                             graph.addUnidirectionalEdge(nodeTable[x][y+2], nodeTable[x][y+1], EDGE_STRAIGHT);
                             graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x+1][y+2], EDGE_STRAIGHT);
