@@ -239,30 +239,33 @@ public class Main extends ApplicationAdapter {
 
 //        bucketSprite.draw(spriteBatch);
 
-        
+        spriteBatch.end();
 
                 // Draw highlight
         doHighlightRobot = doHighlightRobot ? robotViewer.updateRobotLocation() : false;
         if (doHighlightRobot) {
-            shapeRenderer.end();
+            System.out.println("render");
+            shapeRenderer.setProjectionMatrix(viewport.getCamera().combined);
+            Gdx.graphics.getGL20().glEnable(GL20.GL_BLEND);
+            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-            shapeRenderer.setColor(1, 0, 1, 0.5f);
-
+            shapeRenderer.setColor(1, 0, 1, 0.3f);
             // draw car
             float progress = 1.0f - ((float) robotViewer.robot.getRemainingProgression() / (float) robotViewer.robot.getTotalEdgeWeight());
-            shapeRenderer.circle(0.25f+robotViewer.currentNode.getX()*progress + robotViewer.robot.getOriginX()*(1-progress),
-                1f+robotViewer.currentNode.getY()*progress + robotViewer.robot.getOriginY()*(1-progress),
+            shapeRenderer.circle(robotViewer.currentNode.getX()*progress + 0.5f+ robotViewer.robot.getOriginX()*(1-progress),
+                0.5f+robotViewer.currentNode.getY()*progress + robotViewer.robot.getOriginY()*(1-progress),
                 2f);
             shapeRenderer.end();
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-            shapeRenderer.setColor(1, 0, 1, 0.5f);
+            shapeRenderer.setColor(1, 0, 1, 0.3f);
             // draw house;
-            shapeRenderer.circle(0.25f+gameGraph.getNode(robotViewer.robot.getRobot().destinationNodeId).getX(),
-                1f+gameGraph.getNode(robotViewer.robot.getRobot().destinationNodeId).getY(),
+            shapeRenderer.circle(0.5f+gameGraph.getNode(robotViewer.robot.getRobot().destinationNodeId).getX(),
+                0.5f+gameGraph.getNode(robotViewer.robot.getRobot().destinationNodeId).getY(),
                 2f);
+            shapeRenderer.end();
         }
 
-        spriteBatch.end();
+        
     }
 
 //    private Texture getRoadTextureType(GraphNode<Integer, Integer> node) {

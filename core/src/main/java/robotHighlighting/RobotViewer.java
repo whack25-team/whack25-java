@@ -21,7 +21,7 @@ public class RobotViewer {
         System.out.println("set new robot");
         this.currentNode = graph.getNodeByCoordinates((int) x, (int) y);
 
-        if (currentNode.getOccupiers().size() > 0) {
+        if (currentNode != null && currentNode.getOccupiers().size() > 0) {
             RobotMovement<Integer, Integer> closest = currentNode.getOccupiers().get(0);
             // find closest robot to click
             for (int i = 1; i < currentNode.getOccupiers().size(); i++) {
@@ -45,13 +45,20 @@ public class RobotViewer {
         if (currentNode.getOccupiers().contains(robot)) {
             return true;
         } else { // check adjacent nodes for robot
-            List<ConnectedNode<Integer, Integer>> neighbours = currentNode.getNeighbours();
-            for (int i = 0; i < neighbours.size(); i++) {
-                if (neighbours.get(i).node.getOccupiers().contains(robot)) {
-                    currentNode = neighbours.get(i).node;
-                    return true;
-                } 
+            List<ConnectedNode<Integer, Integer>> neighboursOut = currentNode.getNeighbours();
+            System.out.println(neighboursOut);
+            for (int j = 0; j < neighboursOut.size(); j++) {
+                List<ConnectedNode<Integer, Integer>> neighbours = neighboursOut.get(j).node.getNeighbours();
+                System.out.println(neighbours);
+                for (int i = 0; i < neighbours.size(); i++) {
+                    if (neighbours.get(i).node.getOccupiers().contains(robot)) {
+                        currentNode = neighbours.get(i).node;
+                        System.out.println("found");
+                        return true;
+                    } 
+                }
             }
+    
         }
         System.out.println("delete new robot");
         return false;
