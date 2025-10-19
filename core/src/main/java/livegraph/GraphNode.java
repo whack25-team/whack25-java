@@ -134,7 +134,7 @@ public class GraphNode<R,N> {
 
                 if (!visitedNodeIds.contains(neighbour.getNode().getNodeId()) && !neighbour.getNode().isBlocked()) { // Avoid cycles && currentPath.path.stream().noneMatch(node -> node.nodeId.equals(neighbour.node.nodeId))
                     // System.out.println("Exploring neighbour "+neighbour.node.nodeId+" from current node "+currentNode.nodeId);
-                    PathNode<R,N> newPath = currentPath.addStep(neighbour.node, neighbour.edgeWeight);
+                    PathNode<R,N> newPath = currentPath.addStep(neighbour.node, neighbour.edgeWeight + (neighbour.node.getOccupiers().size() * 10)); // add extra weight for occupiers to avoid congestion
                     pathsToExplore.add(newPath);
                 }
             }
