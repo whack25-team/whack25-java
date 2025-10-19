@@ -7,10 +7,11 @@ public class Graph<N> {
     private HashMap<N, GraphNode<Integer, N>> nodes;
     private final int gridWidth;
     private final int gridHeight;
-    private final double PROBABILITY_ROBOT_SPAWN_ON_TILE = 0.006;
+    private final double PROBABILITY_ROBOT_SPAWN_ON_TILE = 0.02;
     private int robotCounter = 0;
     private Runnable onRobotSpawn;
     private Runnable onRobotFinish;
+    private boolean spawnRobots = true;
 
     /**
      * Adds a graph with the nodes given. Note, gridWidth and gridHeight are only for reference and not enforced in any way.
@@ -67,6 +68,10 @@ public class Graph<N> {
         nodes.put(node.getNodeId(), node);
     }
 
+    public void toggleSpawnRobots() {
+        spawnRobots = !spawnRobots;
+    }
+
     public boolean toggleNodeEnabled(int x, int y) {
         for (GraphNode<Integer,N> node : nodes.values()) {
             if (node.getX() == x && node.getY() == y) {
@@ -103,7 +108,7 @@ public class Graph<N> {
         for (GraphNode<Integer,N> node : nodes.values()) {
             node.tick();
             // Randomly decide to spawn a robot at this node or at the end
-            if (Math.random() < PROBABILITY_ROBOT_SPAWN_ON_TILE && node.getTileType() == NodeType.HOUSE) {
+            if (Math.random() < PROBABILITY_ROBOT_SPAWN_ON_TILE && node.getTileType() == NodeType.HOUSE && spawnRobots) {
                 if (endNodeR == null) {
                     endNodeR = node;
                 } else { // end node determined from before, use the current node as the start node
