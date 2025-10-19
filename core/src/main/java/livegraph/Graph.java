@@ -7,8 +7,11 @@ public class Graph<N> {
     private HashMap<N, GraphNode<Integer, N>> nodes;
     private final int gridWidth;
     private final int gridHeight;
-    private final double PROBABILITY_ROBOT_SPAWN_ON_TILE = 0.01;
+    private final double PROBABILITY_ROBOT_SPAWN_ON_TILE = 0.02;
     private int robotCounter = 0;
+    private Runnable onRobotSpawn;
+    private Runnable onRobotFinish;
+    private boolean spawnRobots = true;
 
     /**
      * Adds a graph with the nodes given. Note, gridWidth and gridHeight are only for reference and not enforced in any way.
@@ -17,16 +20,32 @@ public class Graph<N> {
      * @param gridWidth
      * @param gridHeight
      */
-    public Graph(HashMap<N, GraphNode<Integer, N>> nodes, int gridWidth, int gridHeight) {
+    public Graph(HashMap<N, GraphNode<Integer, N>> nodes, int gridWidth, int gridHeight, Runnable onRobotSpawn, Runnable onRobotFinish) {
+        // note: onRobotFinish needs to be specified in the nodes themselves
         this.nodes = nodes;
         this.gridWidth = gridWidth;
         this.gridHeight = gridHeight;
+        this.onRobotSpawn = onRobotSpawn;
+        this.onRobotFinish = onRobotFinish;
     }
 
     public Graph(int gridWidth, int gridHeight) {
         this.nodes = new HashMap<>();
         this.gridWidth = gridWidth;
         this.gridHeight = gridHeight;
+        this.onRobotSpawn = () -> {};
+        this.onRobotFinish = () -> {};
+    }
+
+    public void setOnRobotFinish(Runnable onRobotFinish) {
+        this.onRobotFinish = onRobotFinish;
+        for (GraphNode<Integer, N> node : nodes.values()) {
+            node.setOnRobotFinish(onRobotFinish);
+        }
+    }
+
+    public void setOnRobotSpawn(Runnable onRobotSpawn) {
+        this.onRobotSpawn = onRobotSpawn;
     }
 
     /**
@@ -47,6 +66,25 @@ public class Graph<N> {
             throw new IllegalArgumentException("Node coordinates out of bounds");
         }
         nodes.put(node.getNodeId(), node);
+    }
+
+    /**
+     * Gets a node by its coordinates.
+     * @param x
+     * @param y
+     * @return
+     */
+    public GraphNode<Integer,N> getNodeByCoordinates(int x, int y) {
+        for (GraphNode<Integer,N> node : nodes.values()) {
+            if (node.getX() == x && node.getY() == y) {
+                return node;
+            }
+        }
+        return null;
+    }
+
+    public void toggleSpawnRobots() {
+        spawnRobots = !spawnRobots;
     }
 
     public boolean toggleNodeEnabled(int x, int y) {
@@ -85,7 +123,7 @@ public class Graph<N> {
         for (GraphNode<Integer,N> node : nodes.values()) {
             node.tick();
             // Randomly decide to spawn a robot at this node or at the end
-            if (Math.random() < PROBABILITY_ROBOT_SPAWN_ON_TILE && node.getTileType() == NodeType.HOUSE) {
+            if (Math.random() < PROBABILITY_ROBOT_SPAWN_ON_TILE && node.getTileType() == NodeType.HOUSE && spawnRobots) {
                 if (endNodeR == null) {
                     endNodeR = node;
                 } else { // end node determined from before, use the current node as the start node
@@ -93,6 +131,7 @@ public class Graph<N> {
                     node.addOccupier(new RobotMovement<>(robot, 1, node.getX(), node.getY()));
                     System.out.println("Spawned new robot "+robot.robotID+" at node "+node.getNodeId()+" with destination "+endNodeR.getNodeId());
                     endNodeR = null; // reset for next spawn
+                    onRobotSpawn.run();
                 }
             }
         }
@@ -106,21 +145,6 @@ public class Graph<N> {
      */
     public HashMap<N, GraphNode<Integer, N>> getNodes() {
         return nodes;
-    }
-
-    /**
-     * Gets a node by its coordinates.
-     * @param x
-     * @param y
-     * @return
-     */
-    public GraphNode<Integer,N> getNodeByCoordinates(int x, int y) {
-        for (GraphNode<Integer,N> node : nodes.values()) {
-            if (node.getX() == x && node.getY() == y) {
-                return node;
-            }
-        }
-        return null;
     }
 
     public int getGridWidth() {
@@ -189,11 +213,11 @@ public class Graph<N> {
     }
 
     public static Graph<Integer> exampleGraph() {
-        GraphNode<Integer, Integer> nodeA = new GraphNode<>(1, 0, 0, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
-        GraphNode<Integer, Integer> nodeB = new GraphNode<>(2, 9, 0, NodeType.HOUSE, new ArrayList<>(), new ArrayList<>());
-        GraphNode<Integer, Integer> nodeC = new GraphNode<>(3, 0, 9, NodeType.BLANK, new ArrayList<>(), new ArrayList<>());
-        GraphNode<Integer, Integer> nodeD = new GraphNode<>(4, 9, 9, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
-        GraphNode<Integer, Integer> nodeE = new GraphNode<>(5, 4, 4, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
+        GraphNode<Integer, Integer> nodeA = new GraphNode<>(1, 0, 0, NodeType.ROAD, new ArrayList<>(), new ArrayList<>(), () -> {});
+        GraphNode<Integer, Integer> nodeB = new GraphNode<>(2, 9, 0, NodeType.HOUSE, new ArrayList<>(), new ArrayList<>(), () -> {});
+        GraphNode<Integer, Integer> nodeC = new GraphNode<>(3, 0, 9, NodeType.BLANK, new ArrayList<>(), new ArrayList<>(), () -> {});
+        GraphNode<Integer, Integer> nodeD = new GraphNode<>(4, 9, 9, NodeType.ROAD, new ArrayList<>(), new ArrayList<>(), () -> {});
+        GraphNode<Integer, Integer> nodeE = new GraphNode<>(5, 4, 4, NodeType.ROAD, new ArrayList<>(), new ArrayList<>(), () -> {});
 //        nodeA.addNeighbour(new ConnectedNode<>(nodeB, 40));
 //        nodeB.addNeighbour(new ConnectedNode<>(nodeA, 40));
 //        nodeA.addNeighbour(new ConnectedNode<>(nodeC, 40));
@@ -214,7 +238,7 @@ public class Graph<N> {
         nodes.put(3, nodeC);
         nodes.put(4, nodeD);
         nodes.put(5, nodeE);
-        Graph<Integer> graph = new Graph<>(nodes, 10, 10);
+        Graph<Integer> graph = new Graph<>(nodes, 10, 10, () -> {}, () -> {});
 
         nodeE.addOccupier(new RobotMovement<>(new Robot<>(1, 1), 2, 4,4));
 

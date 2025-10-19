@@ -234,29 +234,33 @@ public class Main extends ApplicationAdapter {
             }
         }
 
-        // Draw highlight
-        if (doHighlightRobot) {
-            doHighlightRobot = robotViewer.updateRobotLocation();
-
-            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-            shapeRenderer.setColor(1, worldHeight, 1, 0.3f);
-
-            // draw car
-            float progress = 1.0f - ((float) robotViewer.robot.getRemainingProgression() / (float) robotViewer.robot.getTotalEdgeWeight());
-            shapeRenderer.circle(0.25f+robotViewer.currentNode.getX()*progress + robotViewer.robot.getOriginX()*(1-progress),
-                0.25f+robotViewer.currentNode.getY()*progress + robotViewer.robot.getOriginY()*(1-progress),
-                0.5f);
-
-            // draw house;
-            shapeRenderer.circle(0.25f+gameGraph.getNode(robotViewer.robot.getRobot().destinationNodeId).getX(),
-                0.25f+gameGraph.getNode(robotViewer.robot.getRobot().destinationNodeId).getY(),
-                0.5f);
-        }
-
         // Draw text
         font.draw(spriteBatch, robotsSpawned+"; "+robotsHome, 1, worldHeight - 1);
 
 //        bucketSprite.draw(spriteBatch);
+
+        
+
+                // Draw highlight
+        doHighlightRobot = doHighlightRobot ? robotViewer.updateRobotLocation() : false;
+        if (doHighlightRobot) {
+            shapeRenderer.end();
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setColor(1, 0, 1, 0.5f);
+
+            // draw car
+            float progress = 1.0f - ((float) robotViewer.robot.getRemainingProgression() / (float) robotViewer.robot.getTotalEdgeWeight());
+            shapeRenderer.circle(0.25f+robotViewer.currentNode.getX()*progress + robotViewer.robot.getOriginX()*(1-progress),
+                1f+robotViewer.currentNode.getY()*progress + robotViewer.robot.getOriginY()*(1-progress),
+                2f);
+            shapeRenderer.end();
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setColor(1, 0, 1, 0.5f);
+            // draw house;
+            shapeRenderer.circle(0.25f+gameGraph.getNode(robotViewer.robot.getRobot().destinationNodeId).getX(),
+                1f+gameGraph.getNode(robotViewer.robot.getRobot().destinationNodeId).getY(),
+                2f);
+        }
 
         spriteBatch.end();
     }
