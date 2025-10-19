@@ -120,7 +120,7 @@ public class Main extends ApplicationAdapter {
     public void render() {
         logic();
         // waitBeforeFrame();
-        // input();
+        input();
         draw();
 //        ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
 //        batch.begin();
@@ -152,7 +152,11 @@ public class Main extends ApplicationAdapter {
     }
 
     private void input() {
-        // Get if a grid square is clicked
+        // Toggle robot spawning when "S" is tapped
+        if (Gdx.input.isKeyJustPressed(Input.Keys.S)) {
+            gameGraph.toggleSpawnRobots();
+            System.out.println("Toggling robot spawning");
+        }
 
 //        float speed = .25f;
 //        float delta = Gdx.graphics.getDeltaTime(); // time since last frame
