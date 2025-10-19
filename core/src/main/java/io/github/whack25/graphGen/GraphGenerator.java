@@ -30,7 +30,7 @@ public class GraphGenerator {
         int[][] graph = new int[width][height];
 
         // generate random start point
-        int x1 =(int)(Math.random() * width);
+        int x1 = (int)(Math.random() * width);
         int y1 = (int)(Math.random() * height);
 
         int x2 = (int)(Math.random() * width);
