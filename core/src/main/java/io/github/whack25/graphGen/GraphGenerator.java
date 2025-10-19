@@ -121,7 +121,7 @@ public class GraphGenerator {
 
                             int paths = 0;
                             switch (newDirection) { // stop adding paths if there is a path to the side of the next one, avoids 2+ thick line of junctions
-                                case 0:
+                                case 0: 
                                     if (xInc < width - 1 && graph[xInc+1][yInc] == 1) paths++;
                                     if (xInc > 0 && graph[xInc-1][yInc] == 1) paths++;
                                     break;
@@ -233,7 +233,7 @@ public class GraphGenerator {
             }
         }
 
-        // add edges for all nodes
+        // add edges for all nodes 
         // done in sets of 2x2 cells as per graph node
 
         for (int i = 0; i < width; i++) {
@@ -303,7 +303,7 @@ public class GraphGenerator {
                             graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_UTURN);
                         } else if (directions[3] == 1 && directions[0] == 1) { // east and south empty
                             graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_STRAIGHT);
-                            graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+1][y+1], EDGE_STRAIGHT);
+                            graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_STRAIGHT);
                             graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_UTURN);
                             graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x][y+1], EDGE_UTURN);
                             graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x][y], EDGE_UTURN);
@@ -322,7 +322,6 @@ public class GraphGenerator {
                             graph.addUnidirectionalEdge(nodeTable[x][y], nodeTable[x+1][y], EDGE_STRAIGHT);
                             graph.addUnidirectionalEdge(nodeTable[x+1][y], nodeTable[x+2][y], EDGE_STRAIGHT);
                             graph.addUnidirectionalEdge(nodeTable[x+2][y+1], nodeTable[x+1][y+1], EDGE_STRAIGHT);
-                            graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x+1][y+2], EDGE_STRAIGHT);
                             graph.addUnidirectionalEdge(nodeTable[x][y+2], nodeTable[x][y+1], EDGE_STRAIGHT);
                             graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x][y+1], EDGE_UTURN);
                             graph.addUnidirectionalEdge(nodeTable[x+1][y+1], nodeTable[x+1][y], EDGE_UTURN);
@@ -410,7 +409,7 @@ public class GraphGenerator {
             for (int j = 0; j < graphData.getNodeTable()[i].length; j++) {
                 if (graphData.getNodeTable()[i][j] == 0) {
                     if (Math.random() < probability) {
-
+                        
                         ArrayList<Integer> directions = new ArrayList<Integer>();
                         if (i > 0 && graphData.getNodeTable()[i-1][j] > 0 && graphData.graph.getNode(graphData.getNodeTable()[i-1][j]).getTileType() == NodeType.ROAD) {
                             directions.add(3); // west
@@ -428,24 +427,24 @@ public class GraphGenerator {
                             // create house facing direction
                             graphData.nodeTable[i][j] = GenerateId(i, j, graphData.getNodeTable().length);
                             graphData.graph.addNode( new GraphNode<>(graphData.nodeTable[i][j], i, j, NodeType.HOUSE, new ArrayList<>(), new ArrayList<>()));
-
+                            
                             int a = i;
                             int b = j;
 
                             switch (direction) {
-                                case 0:
+                                case 0: 
                                     b -= 1; // north
                                     break;
-                                case 1:
+                                case 1: 
                                     a += 1; // east
                                     break;
-                                case 2:
+                                case 2: 
                                     b += 1; // south
                                     break;
-                                case 3:
+                                case 3: 
                                     a -= 1; // west
                                     break;
-                                default:
+                                default: 
                                     b = 0;
                                     break;
                             }
