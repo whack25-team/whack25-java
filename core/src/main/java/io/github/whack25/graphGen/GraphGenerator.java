@@ -31,7 +31,7 @@ public class GraphGenerator {
         int[][] graph = new int[width][height];
 
         // generate random start point
-        int x1 =(int)(Math.random() * width);
+        /*int x1 =(int)(Math.random() * width);
         int y1 = (int)(Math.random() * height);
 
         int x2 = (int)(Math.random() * width);
@@ -42,9 +42,9 @@ public class GraphGenerator {
             y1 = (int)(Math.random() * height);
             x2 = (int)(Math.random() * width);
             y2 = (int)(Math.random() * height);
-        }
+        }*/
 
-        /*int x1,y1,x2,y2;
+        int x1,y1,x2,y2;
 
         if (Math.random() < 0.5) {
             x1 = 0;
@@ -57,7 +57,7 @@ public class GraphGenerator {
             x1 = (int) (Math.random() * (float) width);
             y2 = height;
             x2 = (int) (Math.random() * (float) width);
-        }*/
+        }
 
         // draw line between the points
         int dx = x2 - x1;
