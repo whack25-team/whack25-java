@@ -27,8 +27,8 @@ public class GraphGenerator {
     /**
      * Generates a graph with the specified dimensions and coverage goal.
      * Nodes generated are 2 thick so the graph cell-width is double the size of the input dimensions.
-     * @param x Width of the graph
-     * @param y Height of the graph
+     * @param width Width of the graph
+     * @param height Height of the graph
      * @param coverageGoal Desired coverage as a fraction (0.0 to 1.0)
      */
     public int[][] generateGraph(int width, int height, double coverageGoal) {
@@ -121,7 +121,7 @@ public class GraphGenerator {
 
                             int paths = 0;
                             switch (newDirection) { // stop adding paths if there is a path to the side of the next one, avoids 2+ thick line of junctions
-                                case 0: 
+                                case 0:
                                     if (xInc < width - 1 && graph[xInc+1][yInc] == 1) paths++;
                                     if (xInc > 0 && graph[xInc-1][yInc] == 1) paths++;
                                     break;
@@ -233,7 +233,7 @@ public class GraphGenerator {
             }
         }
 
-        // add edges for all nodes 
+        // add edges for all nodes
         // done in sets of 2x2 cells as per graph node
 
         for (int i = 0; i < width; i++) {
@@ -410,7 +410,7 @@ public class GraphGenerator {
             for (int j = 0; j < graphData.getNodeTable()[i].length; j++) {
                 if (graphData.getNodeTable()[i][j] == 0) {
                     if (Math.random() < probability) {
-                        
+
                         ArrayList<Integer> directions = new ArrayList<Integer>();
                         if (i > 0 && graphData.getNodeTable()[i-1][j] > 0 && graphData.graph.getNode(graphData.getNodeTable()[i-1][j]).getTileType() == NodeType.ROAD) {
                             directions.add(3); // west
@@ -428,24 +428,24 @@ public class GraphGenerator {
                             // create house facing direction
                             graphData.nodeTable[i][j] = GenerateId(i, j, graphData.getNodeTable().length);
                             graphData.graph.addNode( new GraphNode<>(graphData.nodeTable[i][j], i, j, NodeType.HOUSE, new ArrayList<>(), new ArrayList<>()));
-                            
+
                             int a = i;
                             int b = j;
 
                             switch (direction) {
-                                case 0: 
+                                case 0:
                                     b -= 1; // north
                                     break;
-                                case 1: 
+                                case 1:
                                     a += 1; // east
                                     break;
-                                case 2: 
+                                case 2:
                                     b += 1; // south
                                     break;
-                                case 3: 
+                                case 3:
                                     a -= 1; // west
                                     break;
-                                default: 
+                                default:
                                     b = 0;
                                     break;
                             }

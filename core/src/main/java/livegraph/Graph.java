@@ -7,7 +7,7 @@ public class Graph<N> {
     private HashMap<N, GraphNode<Integer, N>> nodes;
     private final int gridWidth;
     private final int gridHeight;
-    private final double PROBABILITY_ROBOT_SPAWN_ON_TILE = 0.0003;
+    private final double PROBABILITY_ROBOT_SPAWN_ON_TILE = 0.003;
     private int robotCounter = 0;
 
     /**
@@ -76,7 +76,7 @@ public class Graph<N> {
             node.tick();
             // Randomly decide to spawn a robot at this node or at the end
             // TODO: Make spawning based on houses when implemented
-            if (Math.random() < PROBABILITY_ROBOT_SPAWN_ON_TILE && node.getTileType() == NodeType.ROAD) {
+            if (Math.random() < PROBABILITY_ROBOT_SPAWN_ON_TILE && node.getTileType() == NodeType.HOUSE) {
                 if (endNodeR == null) {
                     endNodeR = node;
                 } else { // end node determined from before, use the current node as the start node
