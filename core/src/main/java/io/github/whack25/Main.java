@@ -52,7 +52,7 @@ public class Main extends ApplicationAdapter {
         GraphGenerator generator = new GraphGenerator();
         for (int i = 0; i < 20; i++) { // generating the grid is rarely successful first time due to randomness, so retry a few times
             try {
-                gameGraph = generator.generate(30, 30, 0.2, 0.1); //Graph.exampleGraph(); // generator.generate(20, 20, 0.4, 0.2);
+                gameGraph = generator.generate(30, 30, 0.35, 0.1); //Graph.exampleGraph(); // generator.generate(20, 20, 0.4, 0.2);
                 break;
             } catch (Exception e) {
                 System.err.println("Failed to generate the grid, retrying... (" + (i+1) + "/20)");

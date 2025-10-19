@@ -7,7 +7,7 @@ public class Graph<N> {
     private HashMap<N, GraphNode<Integer, N>> nodes;
     private final int gridWidth;
     private final int gridHeight;
-    private final double PROBABILITY_ROBOT_SPAWN_ON_TILE = 0.015;
+    private final double PROBABILITY_ROBOT_SPAWN_ON_TILE = 0.006;
     private int robotCounter = 0;
     private Runnable onRobotSpawn;
     private Runnable onRobotFinish;
