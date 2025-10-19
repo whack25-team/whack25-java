@@ -49,14 +49,14 @@ public class Graph<N> {
         nodes.put(node.getNodeId(), node);
     }
 
-    public void toggleNodeEnabled(int x, int y) {
+    public boolean toggleNodeEnabled(int x, int y) {
         for (GraphNode<Integer,N> node : nodes.values()) {
             if (node.getX() == x && node.getY() == y) {
                 node.setBlocked(!node.isBlocked());
-                return;
+                return true;
             }
         }
-        throw new IllegalArgumentException("No node found at the given coordinates");
+        return false;
     }
 
     /**
