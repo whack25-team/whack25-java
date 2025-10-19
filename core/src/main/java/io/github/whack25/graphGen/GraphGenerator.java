@@ -8,10 +8,10 @@ import livegraph.NodeType;
 
 public class GraphGenerator {
 
-    final int EDGE_STRAIGHT = 3;
-    final int EDGE_UTURN= 5;
+    final int EDGE_STRAIGHT = 15;
+    final int EDGE_UTURN= 25;
 
-    public Graph<Integer,Integer> generate(int width, int height, double coverageGoal) {
+    public Graph<Integer> generate(int width, int height, double coverageGoal) {
         return convertGraphToCellGraph(generateGraph(width, height, coverageGoal));
     }
 
@@ -23,7 +23,7 @@ public class GraphGenerator {
      * @param coverageGoal Desired coverage as a fraction (0.0 to 1.0)
      */
     public int[][] generateGraph(int width, int height, double coverageGoal) {
-        
+
         int[][] graph = new int[width][height];
 
         int coverage = 0; // number of covered cells
@@ -55,19 +55,19 @@ public class GraphGenerator {
                 int newX = x;
                 int newY = y;
                 switch (newDirection) {
-                    case 0: 
+                    case 0:
                         newY = y - length; // north
                         break;
-                    case 1: 
+                    case 1:
                         newX = x + length; // east
                         break;
-                    case 2: 
+                    case 2:
                         newY = y + length; // south
                         break;
-                    case 3: 
+                    case 3:
                         newX = x - length; // west
                         break;
-                    default: 
+                    default:
                         newY = 0;
                         break;
                 }
@@ -85,7 +85,7 @@ public class GraphGenerator {
                     newY = 0;
                     length = y;
                 }
-                else if (newY >= height) 
+                else if (newY >= height)
                 {
                     newY = height - 1;
                     length = height -  y - 1;
@@ -112,7 +112,7 @@ public class GraphGenerator {
 
                             int paths = 0;
                             switch (newDirection) {
-                                case 0: 
+                                case 0:
                                     if (xInc < width - 1 && graph[xInc+1][yInc] == 1) paths++;
                                     if (xInc > 0 && graph[xInc-1][yInc] == 1) paths++;
                                     break;
@@ -120,15 +120,15 @@ public class GraphGenerator {
                                     if (yInc < height - 1 && graph[xInc][yInc+1] == 1) paths++;
                                     if (yInc > 0 && graph[xInc][yInc-1] == 1) paths++;
                                     break;
-                                case 2: 
+                                case 2:
                                     if (xInc < width - 1 && graph[xInc+1][yInc] == 1) paths++;
                                     if (xInc > 0 && graph[xInc-1][yInc] == 1) paths++;
                                     break;
-                                case 3: 
+                                case 3:
                                     if (yInc < height - 1 && graph[xInc][yInc+1] == 1) paths++;
                                     if (yInc > 0 && graph[xInc][yInc-1] == 1) paths++;
                                     break;
-                                default: 
+                                default:
                                     break;
                             }
                             if (paths < 1) { // if even number of paths adjacent, stop path
@@ -200,8 +200,8 @@ public class GraphGenerator {
      * @param table
      * @return
      */
-    public Graph<Integer, Integer> convertGraphToCellGraph(int[][] table) {
-        Graph<Integer, Integer> graph = new Graph<Integer, Integer>(new HashMap<Integer, GraphNode<Integer, Integer>>(), table.length * 2, table[0].length * 2);
+    public Graph<Integer> convertGraphToCellGraph(int[][] table) {
+        Graph<Integer> graph = new Graph<>(new HashMap<Integer, GraphNode<Integer, Integer>>(), table.length * 2, table[0].length * 2);
 
         int width = table.length;
         int height = table[0].length;
@@ -256,7 +256,7 @@ public class GraphGenerator {
                 int x = i * 2;
                 int y = j * 2;
                 //displayGraph(nodeTable, x, y);
-                /*System.out.println("Node at " + x + ", " + y 
+                /*System.out.println("Node at " + x + ", " + y
                 + " with objs at directions: N:" + directions[0] + " E:" + directions[1] + " S:" + directions[2] + " W:" + directions[3]
                  + " with " + table[i][j] + "type.");*/
                 if (nodeTable[x][y] > 0) {

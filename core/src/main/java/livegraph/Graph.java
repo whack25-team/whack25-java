@@ -3,10 +3,12 @@ package livegraph;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Graph<N, R> {
-    private HashMap<N, GraphNode<R, N>> nodes;
+public class Graph<N> {
+    private HashMap<N, GraphNode<Integer, N>> nodes;
     private final int gridWidth;
     private final int gridHeight;
+    private final double PROBABILITY_ROBOT_SPAWN_ON_TILE = 0.0003;
+    private int robotCounter = 0;
 
     /**
      * Adds a graph with the nodes given. Note, gridWidth and gridHeight are only for reference and not enforced in any way.
@@ -15,7 +17,7 @@ public class Graph<N, R> {
      * @param gridWidth
      * @param gridHeight
      */
-    public Graph(HashMap<N, GraphNode<R, N>> nodes, int gridWidth, int gridHeight) {
+    public Graph(HashMap<N, GraphNode<Integer, N>> nodes, int gridWidth, int gridHeight) {
         this.nodes = nodes;
         this.gridWidth = gridWidth;
         this.gridHeight = gridHeight;
@@ -31,7 +33,7 @@ public class Graph<N, R> {
      * Adds a node to the graph.
      * @param node the node to add
      */
-    public void addNode(GraphNode<R,N> node) {
+    public void addNode(GraphNode<Integer,N> node) {
         if (node.getX() < 0 || node.getX() >= gridWidth || node.getY() < 0 || node.getY() >= gridHeight) {
             throw new IllegalArgumentException("Node coordinates out of bounds");
         }
@@ -45,8 +47,8 @@ public class Graph<N, R> {
      * @param edgeWeight the weight of the edge
      */
     public void addUnidirectionalEdge(N fromNodeId, N toNodeId, int edgeWeight) {
-        GraphNode<R,N> fromNode = nodes.get(fromNodeId);
-        GraphNode<R,N> toNode = nodes.get(toNodeId);
+        GraphNode<Integer,N> fromNode = nodes.get(fromNodeId);
+        GraphNode<Integer,N> toNode = nodes.get(toNodeId);
         if (fromNode != null && toNode != null) {
             fromNode.addNeighbour(new ConnectedNode<>(toNode, edgeWeight));
         } else {
@@ -59,8 +61,22 @@ public class Graph<N, R> {
      * Progress all robot movements in the graph by one tick.
      */
     public void tick() {
-        for (GraphNode<R,N> node : nodes.values()) {
+        GraphNode<Integer,N> endNodeR = null; // node for the robot to end at
+
+        for (GraphNode<Integer,N> node : nodes.values()) {
             node.tick();
+            // Randomly decide to spawn a robot at this node or at the end
+            // TODO: Make spawning based on houses when implemented
+            if (Math.random() < PROBABILITY_ROBOT_SPAWN_ON_TILE && node.getTileType() == NodeType.ROAD) {
+                if (endNodeR == null) {
+                    endNodeR = node;
+                } else { // end node determined from before, use the current node as the start node
+                    Robot<Integer,N> robot = new Robot<>(robotCounter++, endNodeR.getNodeId());
+                    node.addOccupier(new RobotMovement<>(robot, 1, node.getX(), node.getY()));
+                    System.out.println("Spawned new robot "+robot.robotID+" at node "+node.getNodeId()+" with destination "+endNodeR.getNodeId());
+                    endNodeR = null; // reset for next spawn
+                }
+            }
         }
     }
 
@@ -70,7 +86,7 @@ public class Graph<N, R> {
      * Gets the nodes in the graph.
      * @return the nodes in the graph
      */
-    public HashMap<N, GraphNode<R, N>> getNodes() {
+    public HashMap<N, GraphNode<Integer, N>> getNodes() {
         return nodes;
     }
 
@@ -83,72 +99,72 @@ public class Graph<N, R> {
     }
 
     public static void main(String[] args) {
-        GraphNode<String, String> nodeA = new GraphNode<>("A", 0, 0, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
-        GraphNode<String, String> nodeB = new GraphNode<>("B", 1, 0, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
-        GraphNode<String, String> nodeC = new GraphNode<>("C", 1, 0, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
-        GraphNode<String, String> nodeD = new GraphNode<>("D", 1, 0, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
-        GraphNode<String, String> nodeE = new GraphNode<>("E", 1, 0, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
-        nodeA.addNeighbour(new ConnectedNode<>(nodeB, 4));
-        nodeB.addNeighbour(new ConnectedNode<>(nodeA, 4));
-        nodeA.addNeighbour(new ConnectedNode<>(nodeC, 4));
-        nodeC.addNeighbour(new ConnectedNode<>(nodeA, 4));
-        nodeB.addNeighbour(new ConnectedNode<>(nodeD, 1));
-        nodeD.addNeighbour(new ConnectedNode<>(nodeB, 1));
-        nodeC.addNeighbour(new ConnectedNode<>(nodeD, 1));
-        nodeD.addNeighbour(new ConnectedNode<>(nodeC, 1));
-        nodeC.addNeighbour(new ConnectedNode<>(nodeE, 1));
-        nodeE.addNeighbour(new ConnectedNode<>(nodeC, 1));
-        nodeB.addNeighbour(new ConnectedNode<>(nodeE, 5));
-        nodeE.addNeighbour(new ConnectedNode<>(nodeB, 5));
-        nodeD.addNeighbour(new ConnectedNode<>(nodeE, 1));
-        nodeE.addNeighbour(new ConnectedNode<>(nodeD, 1));
-        HashMap<String, GraphNode<String, String>> nodes = new HashMap<>();
-        nodes.put("A", nodeA);
-        nodes.put("B", nodeB);
-        nodes.put("C", nodeC);
-        nodes.put("D", nodeD);
-        nodes.put("E", nodeE);
-        Graph<String, String> graph = new Graph<>(nodes, 10, 10);
-
-        GraphNode<String, String> nextNode = nodeE.getNextNodeOnPath("A");
-
-        System.out.println(nextNode);
-
-        // Testing with robot occupiers
-
-        // Add a robot moving into node E from an arbitrary node, with an edge weight of 2
-        nodeE.addOccupier(new RobotMovement<>(new Robot<>("Robo 1", "A"), 2, 4,4));
-
-        System.out.println(nodeE);
-        nodeE.tick();
-        System.out.println(nodeE);
-        nodeE.tick();
-        System.out.println(nodeE);
-        System.out.println("----");
-        nodeE.tick();
-        System.out.println(nodeE);
-        System.out.println(nodeC);
-        nodeC.tick();
-        System.out.println(nodeC);
-        System.out.println("----");
-        nodeC.tick();
-        System.out.println(nodeC);
-        System.out.println(nodeA);
-        nodeA.tick();
-        System.out.println(nodeA);
+//        GraphNode<String, String> nodeA = new GraphNode<>("A", 0, 0, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
+//        GraphNode<String, String> nodeB = new GraphNode<>("B", 1, 0, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
+//        GraphNode<String, String> nodeC = new GraphNode<>("C", 1, 0, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
+//        GraphNode<String, String> nodeD = new GraphNode<>("D", 1, 0, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
+//        GraphNode<String, String> nodeE = new GraphNode<>("E", 1, 0, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
+//        nodeA.addNeighbour(new ConnectedNode<>(nodeB, 4));
+//        nodeB.addNeighbour(new ConnectedNode<>(nodeA, 4));
+//        nodeA.addNeighbour(new ConnectedNode<>(nodeC, 4));
+//        nodeC.addNeighbour(new ConnectedNode<>(nodeA, 4));
+//        nodeB.addNeighbour(new ConnectedNode<>(nodeD, 1));
+//        nodeD.addNeighbour(new ConnectedNode<>(nodeB, 1));
+//        nodeC.addNeighbour(new ConnectedNode<>(nodeD, 1));
+//        nodeD.addNeighbour(new ConnectedNode<>(nodeC, 1));
+//        nodeC.addNeighbour(new ConnectedNode<>(nodeE, 1));
+//        nodeE.addNeighbour(new ConnectedNode<>(nodeC, 1));
+//        nodeB.addNeighbour(new ConnectedNode<>(nodeE, 5));
+//        nodeE.addNeighbour(new ConnectedNode<>(nodeB, 5));
+//        nodeD.addNeighbour(new ConnectedNode<>(nodeE, 1));
+//        nodeE.addNeighbour(new ConnectedNode<>(nodeD, 1));
+//        HashMap<String, GraphNode<String, String>> nodes = new HashMap<>();
+//        nodes.put("A", nodeA);
+//        nodes.put("B", nodeB);
+//        nodes.put("C", nodeC);
+//        nodes.put("D", nodeD);
+//        nodes.put("E", nodeE);
+//        Graph<String, String> graph = new Graph<>(nodes, 10, 10);
+//
+//        GraphNode<String, String> nextNode = nodeE.getNextNodeOnPath("A");
+//
+//        System.out.println(nextNode);
+//
+//        // Testing with robot occupiers
+//
+//        // Add a robot moving into node E from an arbitrary node, with an edge weight of 2
+//        nodeE.addOccupier(new RobotMovement<>(new Robot<>("Robo 1", "A"), 2, 4,4));
+//
+//        System.out.println(nodeE);
+//        nodeE.tick();
+//        System.out.println(nodeE);
+//        nodeE.tick();
+//        System.out.println(nodeE);
+//        System.out.println("----");
+//        nodeE.tick();
+//        System.out.println(nodeE);
+//        System.out.println(nodeC);
+//        nodeC.tick();
+//        System.out.println(nodeC);
+//        System.out.println("----");
+//        nodeC.tick();
+//        System.out.println(nodeC);
+//        System.out.println(nodeA);
+//        nodeA.tick();
+//        System.out.println(nodeA);
 
     }
 
-    public static Graph<Integer, Integer> exampleGraph() {
+    public static Graph<Integer> exampleGraph() {
         GraphNode<Integer, Integer> nodeA = new GraphNode<>(1, 0, 0, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
         GraphNode<Integer, Integer> nodeB = new GraphNode<>(2, 9, 0, NodeType.HOUSE, new ArrayList<>(), new ArrayList<>());
         GraphNode<Integer, Integer> nodeC = new GraphNode<>(3, 0, 9, NodeType.BLANK, new ArrayList<>(), new ArrayList<>());
         GraphNode<Integer, Integer> nodeD = new GraphNode<>(4, 9, 9, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
         GraphNode<Integer, Integer> nodeE = new GraphNode<>(5, 4, 4, NodeType.ROAD, new ArrayList<>(), new ArrayList<>());
-        nodeA.addNeighbour(new ConnectedNode<>(nodeB, 40));
-        nodeB.addNeighbour(new ConnectedNode<>(nodeA, 40));
-        nodeA.addNeighbour(new ConnectedNode<>(nodeC, 40));
-        nodeC.addNeighbour(new ConnectedNode<>(nodeA, 40));
+//        nodeA.addNeighbour(new ConnectedNode<>(nodeB, 40));
+//        nodeB.addNeighbour(new ConnectedNode<>(nodeA, 40));
+//        nodeA.addNeighbour(new ConnectedNode<>(nodeC, 40));
+//        nodeC.addNeighbour(new ConnectedNode<>(nodeA, 40));
         nodeB.addNeighbour(new ConnectedNode<>(nodeD, 10));
         nodeD.addNeighbour(new ConnectedNode<>(nodeB, 10));
         nodeC.addNeighbour(new ConnectedNode<>(nodeD, 10));
@@ -165,7 +181,7 @@ public class Graph<N, R> {
         nodes.put(3, nodeC);
         nodes.put(4, nodeD);
         nodes.put(5, nodeE);
-        Graph<Integer, Integer> graph = new Graph<>(nodes, 10, 10);
+        Graph<Integer> graph = new Graph<>(nodes, 10, 10);
 
         nodeE.addOccupier(new RobotMovement<>(new Robot<>(1, 1), 2, 4,4));
 
