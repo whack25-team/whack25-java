@@ -28,6 +28,7 @@ public class Main extends ApplicationAdapter {
     Texture roadDownTexture;
     Texture roadRightTexture;
     Texture roadLeftTexture;
+    Texture roadBlockedTexture;
     Texture carTexture;
     Texture grassTexture;
     Sound dropSound;
@@ -64,6 +65,7 @@ public class Main extends ApplicationAdapter {
         roadDownTexture = new Texture("roadDown.png");
         roadRightTexture = new Texture("roadRight.png");
         roadLeftTexture = new Texture("roadLeft.png");
+        roadBlockedTexture = new Texture("roadBlocked.png");
         grassTexture = new Texture("Grass.png");
         carTexture = new Texture("car.png");
         dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.mp3"));
@@ -141,6 +143,7 @@ public class Main extends ApplicationAdapter {
         // Add background textures
         for (GraphNode<Integer, Integer> node : gameGraph.getNodes().values()) {
             spriteBatch.draw(node.getTileType() == NodeType.HOUSE ? houseTexture :
+                             node.isBlocked() ? roadBlockedTexture :
                              node.getTileType() == NodeType.ROAD ? roadTexture :
                              grassTexture,
                 node.getX(), node.getY(), 1,1);

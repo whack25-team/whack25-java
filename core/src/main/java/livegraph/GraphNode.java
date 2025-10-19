@@ -14,7 +14,9 @@ public class GraphNode<R,N> {
     private List<RobotMovement<R, N>> occupiers;
     private int maxOccupiers = 1;
     private int disabledForGoes = 0; // number of ticks this node is disabled for, no robots can enter, but robots can leave
-    private double CELL_BLOCK_PROBABILITY_QUEUE = 0.20; // Probability of blocking a cell during a queue
+    private double CELL_BLOCK_PROBABILITY_QUEUE = 0.02; // Probability of blocking a cell during a queue
+    private double CELL_RANDOMLY_BLOCK_PROBABILITY = 0.000005; // Probability of randomly blocking this cell each tick
+    private int CELL_STUCK_BLOCK_MAX_TICKS = 200; // Max ticks to block when stuck in congestion
     private int waitToMove = 0; // Goes to wait before moving due to congestion / no available path
 
     public GraphNode(N nodeId, int x, int y, NodeType tileType, List<ConnectedNode<R,N>> neighbours, List<RobotMovement<R,N>> occupiers) {
@@ -33,6 +35,12 @@ public class GraphNode<R,N> {
         if (this.disabledForGoes > 0) {
             this.disabledForGoes--;
             System.out.println("Node "+this.nodeId+" is disabled for "+this.disabledForGoes+" more ticks, no robots can enter.");
+        }
+
+        // Randomly block this cell occasionally
+        if (tileType == NodeType.ROAD && !isBlocked() && Math.random() < CELL_RANDOMLY_BLOCK_PROBABILITY) {
+            this.disabledForGoes = (int) (Math.random() * 1000); // Block this node for 1-5000 ticks randomly
+            System.out.println("Node " + this.nodeId + " is now randomly blocked for " + this.disabledForGoes + " ticks.");
         }
 
         if (waitToMove > 0) {
@@ -61,7 +69,7 @@ public class GraphNode<R,N> {
                                 System.out.println("Robot " + movement.getRobot().robotID + " at node " + this.nodeId + " cannot move to node " + nextNode.nodeId + " as it is full, staying put.");
                                 newOccupiers.add(movement);
                                 if (Math.random() < CELL_BLOCK_PROBABILITY_QUEUE) { // DISABLE <--- disable this if you want to demo traffic jams
-                                    this.disabledForGoes = (int) (Math.random() * 10); // Block this node for 1-10 ticks due to congestion
+                                    this.disabledForGoes = (int) (Math.random() * CELL_STUCK_BLOCK_MAX_TICKS); // Block this node for 1-10 ticks due to congestion
                                     System.out.println("Node " + this.nodeId + " is now blocked for " + this.disabledForGoes + " ticks due to congestion.");
                                 }
                                 break;
