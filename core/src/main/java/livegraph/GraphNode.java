@@ -14,6 +14,7 @@ public class GraphNode<R,N> {
     private List<RobotMovement<R, N>> occupiers;
     private int maxOccupiers = 1;
     private int disabledForGoes = 0; // number of ticks this node is disabled for, no robots can enter, but robots can leave
+    private double CELL_BLOCK_PROBABILITY_QUEUE = 0.20; // Probability of blocking a cell during a queue
 
     public GraphNode(N nodeId, int x, int y, NodeType tileType, List<ConnectedNode<R,N>> neighbours, List<RobotMovement<R,N>> occupiers) {
         this.nodeId = nodeId;
@@ -28,6 +29,11 @@ public class GraphNode<R,N> {
      * Progress all robot movements occupying this node by one tick.
      */
     public void tick() {
+        if (this.disabledForGoes > 0) {
+            this.disabledForGoes--;
+            System.out.println("Node "+this.nodeId+" is disabled for "+this.disabledForGoes+" more ticks, no robots can enter.");
+        }
+
         List<RobotMovement<R,N>> newOccupiers = new ArrayList<>(); // the occupiers at this node after this tick, during which some robots may leave
         for (RobotMovement<R, N> movement : occupiers) {
             if (movement.readyToMoveNodes() && movement.getRobot().destinationNodeId.equals(this.nodeId)) {
@@ -43,10 +49,14 @@ public class GraphNode<R,N> {
                     for (ConnectedNode<R,N> neighbour : this.getNeighbours()) {
                         if (neighbour.node.nodeId.equals(nextNode.nodeId)) {
                             // Found the edge to the next node
-                            if (nextNode .occupiers.size() >= nextNode.getMaxOccupiers()) {
+                            if (nextNode.occupiers.size() >= nextNode.getMaxOccupiers() || nextNode.isBlocked()) {
                                 // Next node is full, robot stays at this node
                                 System.out.println("Robot " + movement.getRobot().robotID + " at node " + this.nodeId + " cannot move to node " + nextNode.nodeId + " as it is full, staying put.");
                                 newOccupiers.add(movement);
+                                if (Math.random() < CELL_BLOCK_PROBABILITY_QUEUE) { // DISABLE <--- disable this if you want to demo traffic jams
+                                    this.disabledForGoes = (int) (Math.random() * 100); // Block this node for 1-10 ticks due to congestion
+                                    System.out.println("Node " + this.nodeId + " is now blocked for " + this.disabledForGoes + " ticks due to congestion.");
+                                }
                                 break;
                             } else { // Move to next node
                                 RobotMovement<R,N> newMovement = new RobotMovement<>(movement.getRobot(), neighbour.edgeWeight, this.x, this.y);
@@ -101,7 +111,7 @@ public class GraphNode<R,N> {
             // Explore neighbours
             for (ConnectedNode<R,N> neighbour : currentNode.getNeighbours()) {
 
-                if (!visitedNodeIds.contains(neighbour.getNode().getNodeId())) { // Avoid cycles && currentPath.path.stream().noneMatch(node -> node.nodeId.equals(neighbour.node.nodeId))
+                if (!visitedNodeIds.contains(neighbour.getNode().getNodeId()) && !neighbour.getNode().isBlocked()) { // Avoid cycles && currentPath.path.stream().noneMatch(node -> node.nodeId.equals(neighbour.node.nodeId))
                     // System.out.println("Exploring neighbour "+neighbour.node.nodeId+" from current node "+currentNode.nodeId);
                     PathNode<R,N> newPath = currentPath.addStep(neighbour.node, neighbour.edgeWeight);
                     pathsToExplore.add(newPath);
@@ -136,6 +146,14 @@ public class GraphNode<R,N> {
 
     public NodeType getTileType() {
         return tileType;
+    }
+
+    public int getMaxOccupiers() {
+        return maxOccupiers;
+    }
+
+    public boolean isBlocked() {
+        return this.disabledForGoes > 0;
     }
 
     // Setters
