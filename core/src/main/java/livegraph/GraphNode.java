@@ -35,6 +35,12 @@ public class GraphNode<R,N> {
             System.out.println("Node "+this.nodeId+" is disabled for "+this.disabledForGoes+" more ticks, no robots can enter.");
         }
 
+        if (waitToMove > 0) {
+            waitToMove--;
+            System.out.println("Node "+this.nodeId+" is waiting to move for "+waitToMove+" more ticks due to congestion.");
+            return; // Do not process robot movements this tick
+        }
+
         List<RobotMovement<R,N>> newOccupiers = new ArrayList<>(); // the occupiers at this node after this tick, during which some robots may leave
         for (RobotMovement<R, N> movement : occupiers) {
             if (movement.readyToMoveNodes() && movement.getRobot().destinationNodeId.equals(this.nodeId)) {
