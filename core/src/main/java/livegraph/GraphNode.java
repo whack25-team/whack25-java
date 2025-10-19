@@ -1,6 +1,7 @@
 package livegraph;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -27,7 +28,12 @@ public class GraphNode<R,N> {
     public void tick() {
         List<RobotMovement<R,N>> newOccupiers = new ArrayList<>(); // the occupiers at this node after this tick, during which some robots may leave
         for (RobotMovement<R, N> movement : occupiers) {
-            if (movement.readyToMoveNodes()) {
+            if (movement.readyToMoveNodes() && movement.getRobot().destinationNodeId.equals(this.nodeId)) {
+                // Robot has reached its destination, so it leaves the graph
+                System.out.println("Robot "+movement.getRobot().robotID+" has reached its destination at node "+this.nodeId);
+                continue; // Do not add to newOccupiers
+            }
+            else if (movement.readyToMoveNodes()) {
                 // Robot has fully moved into this node, so we can decide its next move
                 GraphNode<R,N> nextNode = this.getNextNodeOnPath(movement.getRobot().destinationNodeId);
                 if (nextNode != null) {
@@ -35,14 +41,15 @@ public class GraphNode<R,N> {
                     for (ConnectedNode<R,N> neighbour : this.getNeighbours()) {
                         if (neighbour.node.nodeId.equals(nextNode.nodeId)) {
                             // Found the edge to the next node
-                            RobotMovement<R,N> newMovement = new RobotMovement<>(movement.getRobot(), neighbour.edgeWeight);
+                            RobotMovement<R,N> newMovement = new RobotMovement<>(movement.getRobot(), neighbour.edgeWeight, this.x, this.y);
                             nextNode.occupiers.add(newMovement);
                             break;
                         }
                     }
                 } else {
                     // No path found, robot stays at this node
-                    newOccupiers.add(movement);
+                    System.out.println("Robot "+movement.getRobot().robotID+" at node "+this.nodeId+" has no path to destination "+movement.getRobot().destinationNodeId+", staying put.");
+                    // newOccupiers.add(movement);
                 }
             } else {
                 // Robot is still moving into this node, stays here
@@ -62,10 +69,13 @@ public class GraphNode<R,N> {
 
         pathsToExplore.add(new PathNode<>(new ArrayList<>(List.of(this)), 0));
 
+        HashSet<N> visitedNodeIds = new HashSet<>();
+
         while (!pathsToExplore.isEmpty()) {
             PathNode<R,N> currentPath = pathsToExplore.poll();
 
             GraphNode<R,N> currentNode = currentPath.path.get(currentPath.path.size() - 1);
+            visitedNodeIds.add(currentNode.nodeId);
 
             // If we reached the destination, return the next node in the path
             if (currentNode.nodeId.equals(destinationNodeId)) {
@@ -81,7 +91,9 @@ public class GraphNode<R,N> {
 
             // Explore neighbours
             for (ConnectedNode<R,N> neighbour : currentNode.getNeighbours()) {
-                if (currentPath.path.stream().noneMatch(node -> node.nodeId.equals(neighbour.node.nodeId))) { // Avoid cycles
+
+                if (!visitedNodeIds.contains(neighbour.getNode().getNodeId())) { // Avoid cycles && currentPath.path.stream().noneMatch(node -> node.nodeId.equals(neighbour.node.nodeId))
+                    // System.out.println("Exploring neighbour "+neighbour.node.nodeId+" from current node "+currentNode.nodeId);
                     PathNode<R,N> newPath = currentPath.addStep(neighbour.node, neighbour.edgeWeight);
                     pathsToExplore.add(newPath);
                 }
@@ -97,6 +109,10 @@ public class GraphNode<R,N> {
         return this.neighbours;
     }
 
+    public List<RobotMovement<R,N>> getOccupiers() {
+        return this.occupiers;
+    }
+
     public N getNodeId() {
         return nodeId;
     }
@@ -107,6 +123,10 @@ public class GraphNode<R,N> {
 
     public int getY() {
         return y;
+    }
+
+    public NodeType getTileType() {
+        return tileType;
     }
 
     // Setters

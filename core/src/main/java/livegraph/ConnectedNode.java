@@ -9,6 +9,10 @@ public class ConnectedNode<R, N> {
         this.edgeWeight = edgeWeight;
     }
 
+    public GraphNode<R, N> getNode() {
+        return node;
+    }
+
     @Override
     public String toString() {
         return "ConnectedNode{" +
