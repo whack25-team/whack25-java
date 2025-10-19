@@ -11,10 +11,8 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import livegraph.Graph;
-import livegraph.GraphNode;
-import livegraph.NodeType;
-import livegraph.RobotMovement;
+import io.github.whack25.graphGen.GraphGenerator;
+import livegraph.*;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {
@@ -26,12 +24,16 @@ public class Main extends ApplicationAdapter {
     Texture dropTexture;
     Texture houseTexture;
     Texture roadTexture;
+    Texture roadTopTexture;
+    Texture roadDownTexture;
+    Texture roadRightTexture;
+    Texture roadLeftTexture;
     Texture carTexture;
     Texture grassTexture;
     Sound dropSound;
     Music music;
     Sprite bucketSprite;
-    private Graph<String, String> gameGraph;
+    private Graph<Integer> gameGraph;
     private final int MAX_FRAME_RATE = 2;
 
     @Override
@@ -39,7 +41,17 @@ public class Main extends ApplicationAdapter {
         /* Load textures, sounds here - you should not create these at constructor
         or init level as LibGDX needs to be loaded first
         */
-        gameGraph = Graph.exampleGraph();
+        GraphGenerator generator = new GraphGenerator();
+        for (int i = 0; i < 20; i++) { // generating the grid is rarely successful first time due to randomness, so retry a few times
+            try {
+                gameGraph = generator.generate(50, 50, 0.4); //Graph.exampleGraph(); // generator.generate(20, 20, 0.4);
+                break;
+            } catch (Exception e) {
+                System.err.println("Failed to generate the grid, retrying... (" + (i+1) + "/20)");
+                e.printStackTrace();
+            }
+        }
+
         spriteBatch = new SpriteBatch();
         image = new Texture("libgdx.png");
         viewport = new FitViewport(gameGraph.getGridWidth(), gameGraph.getGridHeight());
@@ -47,7 +59,11 @@ public class Main extends ApplicationAdapter {
         bucketTexture = new Texture("bucket.png");
         dropTexture = new Texture("drop.png");
         houseTexture = new Texture("house.png");
-        roadTexture = new Texture("roadDown.png"); // TODO
+        roadTexture = new Texture("roadtile.png"); // TODO
+        roadTopTexture = new Texture("roadTop.png");
+        roadDownTexture = new Texture("roadDown.png");
+        roadRightTexture = new Texture("roadRight.png");
+        roadLeftTexture = new Texture("roadLeft.png");
         grassTexture = new Texture("Grass.png");
         carTexture = new Texture("car.png");
         dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.mp3"));
@@ -123,7 +139,7 @@ public class Main extends ApplicationAdapter {
         spriteBatch.draw(backgroundTexture, 0, 0, worldWidth, worldHeight);
 
         // Add background textures
-        for (GraphNode<String, String> node : gameGraph.getNodes().values()) {
+        for (GraphNode<Integer, Integer> node : gameGraph.getNodes().values()) {
             spriteBatch.draw(node.getTileType() == NodeType.HOUSE ? houseTexture :
                              node.getTileType() == NodeType.ROAD ? roadTexture :
                              grassTexture,
@@ -132,9 +148,9 @@ public class Main extends ApplicationAdapter {
         }
 
         // Draw robots
-        for (GraphNode<String, String> node : gameGraph.getNodes().values()) {
+        for (GraphNode<Integer, Integer> node : gameGraph.getNodes().values()) {
             if (!node.getOccupiers().isEmpty()) {
-                for (RobotMovement<String, String> movement : node.getOccupiers()) {
+                for (RobotMovement<Integer, Integer> movement : node.getOccupiers()) {
                     float progress = 1.0f - ((float) movement.getRemainingProgression() / (float) movement.getTotalEdgeWeight());
                     spriteBatch.draw(carTexture,
                         0.25f+node.getX()*progress + movement.getOriginX()*(1-progress),
@@ -148,6 +164,32 @@ public class Main extends ApplicationAdapter {
 
         spriteBatch.end();
     }
+
+//    private Texture getRoadTextureType(GraphNode<Integer, Integer> node) {
+//        // Whether there is a road tile relative to the current tile
+//        boolean roadLeft = false;
+//        boolean roadRight = false;
+//        boolean roadTop = false;
+//        boolean roadDown = false;
+//
+//        System.out.println("Neighbours: "+ node.getNeighbours().size());
+//
+//        for (ConnectedNode<Integer, Integer> neighbour : node.getNeighbours()) {
+//
+//            if (neighbour.node.getTileType() == NodeType.ROAD) {
+//                if (neighbour.node.getX() < node.getX()) roadLeft = true;
+//                if (neighbour.node.getX() > node.getX()) roadRight = true;
+//                if (neighbour.node.getY() < node.getY()) roadDown = true;
+//                if (neighbour.node.getY() > node.getY()) roadTop = true;
+//            }
+//        }
+//
+//        if (!roadLeft && roadRight && roadTop && roadDown) return roadLeftTexture;
+//        if (roadLeft && !roadRight && roadTop && roadDown) return roadRightTexture;
+//        if (roadLeft && roadRight && !roadTop && roadDown) return roadTopTexture;
+//        if (roadLeft && roadRight && roadTop && !roadDown) return roadDownTexture;
+//        return roadTexture; // default
+//    }
 
     @Override
     public void dispose() {
